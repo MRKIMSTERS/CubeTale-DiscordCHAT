@@ -1,0 +1,107 @@
+# ===========================================
+# CubeTale-DiscordCHAT Discord Message Templates
+# ===========================================
+# Placeholders: {player}, {uuid}, {message}, {server}, {online}, {max}
+# Death: {death-message}, {x}, {y}, {z}, {world}
+# Advancement: {advancement}, {description}
+
+messages:
+
+  join:
+    embed:
+      title: "✅ Player Joined"
+      description: "**{player}** joined the server!"
+      color: "#00FF00"
+      thumbnail: "https://crafatar.com/avatars/{uuid}?size=128&overlay"
+      footer: "Players Online: {online}/{max}"
+
+  leave:
+    embed:
+      title: "❌ Player Left"
+      description: "**{player}** left the server."
+      color: "#FF5555"
+      thumbnail: "https://crafatar.com/avatars/{uuid}?size=128&overlay"
+      footer: "Players Online: {online}/{max}"
+
+  death:
+    embed:
+      title: "💀 Player Death"
+      description: "{death-message}"
+      color: "#8B0000"
+      thumbnail: "https://crafatar.com/avatars/{uuid}?size=128&overlay"
+      fields:
+        - name: "📍 Location"
+          value: "X: {x}, Y: {y}, Z: {z}"
+          inline: true
+        - name: "🌍 World"
+          value: "{world}"
+          inline: true
+
+  advancement:
+    embed:
+      title: "🏆 Advancement Unlocked"
+      description: "**{player}** has made the advancement **{advancement}**"
+      color: "#FFD700"
+      thumbnail: "https://crafatar.com/avatars/{uuid}?size=128&overlay"
+      fields:
+        - name: "📖 Description"
+          value: "{description}"
+          inline: false
+
+  server-start:
+    embed:
+      title: "🟢 Server Started"
+      description: "The Minecraft server is now online!"
+      color: "#00FFFF"
+      footer: "Version: {version}"
+
+  server-stop:
+    embed:
+      title: "🔴 Server Stopping"
+      description: "The Minecraft server is shutting down."
+      color: "#FF8800"
+
+  link-success:
+    embed:
+      title: "🔗 Account Linked"
+      description: "Your Discord account has been linked to **{player}**!"
+      color: "#7289DA"
+      thumbnail: "https://crafatar.com/avatars/{uuid}?size=128&overlay"
+
+  link-code:
+    dm-message: |
+      **CubeTale Account Verification**
+
+      Your verification code is: `{code}`
+
+      Use this command in Minecraft: `/link {code}`
+      This code expires in **{time} seconds**.
+
+  slash-commands:
+    players:
+      embed:
+        title: "👥 Online Players ({online}/{max})"
+        description: "{player-list}"
+        color: "#7289DA"
+        no-players: "No players are currently online."
+
+    status:
+      embed:
+        title: "📊 Server Status"
+        color: "#7289DA"
+        fields:
+          - name: "🟢 Status"
+            value: "Online"
+            inline: true
+          - name: "👥 Players"
+            value: "{online}/{max}"
+            inline: true
+          - name: "⏱️ Uptime"
+            value: "{uptime}"
+            inline: true
+          - name: "📈 TPS"
+            value: "{tps}"
+            inline: true
+          - name: "🖥️ Version"
+            value: "{version}"
+            inline: true

@@ -1,0 +1,160 @@
+# ===========================================
+# CubeTale-DiscordCHAT Configuration
+# ===========================================
+# Plugin by CubeTale | Version 1.0.0
+# GitHub: https://github.com/CubeTale/CubeTale-DiscordCHAT
+
+# Discord Bot Settings
+discord:
+  # Your Discord bot token from https://discord.com/developers/applications
+  token: "YOUR_BOT_TOKEN_HERE"
+  # Your Discord server (guild) ID
+  guild-id: "YOUR_GUILD_ID_HERE"
+
+  # WEBHOOK SETTINGS
+  # Webhooks allow messages to appear with custom avatars (player skins)
+  # Create a webhook in your Discord channel settings -> Integrations -> Webhooks
+  webhook:
+    enabled: true
+    url: "YOUR_WEBHOOK_URL_HERE"
+    # Avatar service: crafatar (recommended), mcheads, cravatar, minotar
+    avatar-service: "crafatar"
+    avatar-size: 128
+    show-overlay: true
+
+  # Channel IDs (right-click a channel -> Copy Channel ID, requires Developer Mode)
+  channels:
+    chat: "CHAT_CHANNEL_ID"
+    console: "CONSOLE_CHANNEL_ID"
+    log: "LOG_CHANNEL_ID"
+
+  # Role IDs with elevated permissions in the bot
+  roles:
+    admin: "ADMIN_ROLE_ID"
+    moderator: "MOD_ROLE_ID"
+
+  # Bot activity/presence status
+  activity:
+    enabled: true
+    # Types: PLAYING, WATCHING, LISTENING, STREAMING, COMPETING
+    type: "PLAYING"
+    text: "{online}/{max} players"
+    update-interval: 60
+
+# Chat Synchronization
+chat-sync:
+  enabled: true
+  minecraft-to-discord: true
+  discord-to-minecraft: true
+
+  formats:
+    # Format for Discord -> Minecraft messages
+    # Placeholders: {username}, {display-name}, {message}, {role-color}
+    discord-to-minecraft: "&8[&9Discord&8] &7{display-name}&8: &f{message}"
+
+  filter:
+    blocked-words: []
+    allow-links: false
+    max-length: 2000
+    # Strip Minecraft color codes before sending to Discord
+    strip-colors: true
+
+# Account Linking
+linking:
+  enabled: true
+  # Require players to link before chatting to Discord
+  require-link: false
+  # Method: CODE (bot DMs a code), REACTION (bot posts a reaction message)
+  verification-method: "CODE"
+  code-length: 6
+  # Time in seconds before verification code expires
+  code-expiry: 300
+
+# Role Synchronization
+role-sync:
+  enabled: false
+  # How often to sync roles (in seconds)
+  sync-interval: 300
+  # Map Discord Role IDs to LuckPerms group names
+  mappings:
+    "DISCORD_ROLE_ID_1": "vip"
+    "DISCORD_ROLE_ID_2": "mvp"
+    "DISCORD_ROLE_ID_3": "admin"
+
+# Database Settings
+database:
+  # Type: SQLITE or MYSQL
+  type: "SQLITE"
+
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "cubetale_discord"
+    username: "root"
+    password: "password"
+    pool-size: 10
+    use-ssl: false
+    allow-public-key-retrieval: true
+
+  sqlite:
+    file: "database.db"
+
+# Console Channel Settings
+console:
+  enabled: true
+  show-timestamp: true
+  # Filter sensitive info like IP addresses
+  filter-sensitive: true
+  # Log levels to show in Discord: INFO, WARNING, SEVERE
+  log-levels:
+    - "INFO"
+    - "WARNING"
+    - "SEVERE"
+  # Commands that can be run from Discord (leave empty to allow all for admins)
+  allowed-commands: []
+  # Regex patterns to block from console output
+  blocked-patterns:
+    - "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}"
+    - "password"
+    - "token"
+
+# Event Notifications
+events:
+  join:
+    enabled: true
+    use-embed: true
+    embed-color: "#00FF00"
+
+  leave:
+    enabled: true
+    use-embed: true
+    embed-color: "#FF5555"
+
+  death:
+    enabled: true
+    use-embed: true
+    show-coordinates: true
+    embed-color: "#8B0000"
+
+  advancement:
+    enabled: true
+    use-embed: true
+    embed-color: "#FFD700"
+
+  server-start:
+    enabled: true
+    embed-color: "#00FFFF"
+
+  server-stop:
+    enabled: true
+    embed-color: "#FF8800"
+
+# PlaceholderAPI
+placeholderapi:
+  # Add a prefix from PAPI to the webhook username (e.g. rank prefix)
+  # Leave empty to just use player name
+  username-format: ""
+  # Example: "%luckperms_prefix%%player_name%"
+
+# Debug mode (verbose logging)
+debug: false
