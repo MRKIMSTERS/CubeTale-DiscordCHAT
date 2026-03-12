@@ -28,10 +28,10 @@ public class MinecraftListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (!plugin.getDiscordBot().isConnected()) return;
 
-        Player player = event.getPlayer();
-        String playerName = player.getName();
-        String playerUUID = player.getUniqueId().toString();
-        String avatarUrl = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
+        Player player      = event.getPlayer();
+        String playerName  = player.getName();
+        String playerUUID  = player.getUniqueId().toString();
+        String avatarUrl   = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             plugin.getDiscordBot().sendPlayerJoinNotification(playerName, playerUUID, avatarUrl);
@@ -43,10 +43,10 @@ public class MinecraftListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (!plugin.getDiscordBot().isConnected()) return;
 
-        Player player = event.getPlayer();
-        String playerName = player.getName();
-        String playerUUID = player.getUniqueId().toString();
-        String avatarUrl = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
+        Player player      = event.getPlayer();
+        String playerName  = player.getName();
+        String playerUUID  = player.getUniqueId().toString();
+        String avatarUrl   = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             plugin.getDiscordBot().sendPlayerLeaveNotification(playerName, playerUUID, avatarUrl);
@@ -59,10 +59,10 @@ public class MinecraftListener implements Listener {
         if (!plugin.getDiscordBot().isConnected()) return;
         if (!plugin.getConfigManager().isDeathEnabled()) return;
 
-        Player player = event.getEntity();
-        String playerName = player.getName();
-        String playerUUID = player.getUniqueId().toString();
-        String avatarUrl = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
+        Player player      = event.getEntity();
+        String playerName  = player.getName();
+        String playerUUID  = player.getUniqueId().toString();
+        String avatarUrl   = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
 
         String deathMessage = event.getDeathMessage() != null
                 ? MessageFormatter.stripColors(event.getDeathMessage())
@@ -85,32 +85,25 @@ public class MinecraftListener implements Listener {
         // Only notify for advancements that have a visible display
         if (display == null || !display.shouldAnnounceChat()) return;
 
-        Player player = event.getPlayer();
-        String playerName = player.getName();
-        String playerUUID = player.getUniqueId().toString();
-        String avatarUrl = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
-
+        Player player          = event.getPlayer();
         String advancementTitle = display.getTitle();
-        String advancementDesc = display.getDescription();
+        String advancementDesc  = display.getDescription();
 
-        // Try to get the advancement item icon (Paper API, may not be available on plain Spigot)
+        // Try to get the advancement item icon (Paper API only; graceful fallback on Spigot)
         String iconUrl = resolveAdvancementIconUrl(display);
 
+        // Send via webhook so the player's skin appears as the message avatar
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            plugin.getDiscordBot().sendAdvancementNotification(
-                    playerName, playerUUID, advancementTitle, advancementDesc, avatarUrl, iconUrl);
-            plugin.getPluginLogger().debug("Advancement notification sent for " + playerName + ": " + advancementTitle);
+            plugin.getWebhookManager().sendAdvancementWebhook(
+                    player, advancementTitle, advancementDesc, iconUrl);
+            plugin.getPluginLogger().debug("Advancement webhook sent for "
+                    + player.getName() + ": " + advancementTitle);
         });
     }
 
     /**
      * Attempts to retrieve the item icon from an AdvancementDisplay via the Paper API.
      * Falls back gracefully to null on plain Spigot where the method is not present.
-     *
-     * The item key is mapped to a texture CDN URL so Discord can embed it as an image.
-     *
-     * @param display  The advancement display
-     * @return A CDN image URL for the icon, or null if unavailable
      */
     private String resolveAdvancementIconUrl(AdvancementDisplay display) {
         try {
@@ -118,12 +111,10 @@ public class MinecraftListener implements Listener {
             ItemStack icon = (ItemStack) getIcon.invoke(display);
             if (icon == null) return null;
 
-            // material key: e.g. "diamond_sword", "oak_log", "shield"
             String materialKey = icon.getType().getKey().getKey().toLowerCase();
-            // mc.nerothe.com serves both item and block textures indexed by version
             return "https://mc.nerothe.com/img/1.21/" + materialKey + ".png";
         } catch (NoSuchMethodException ignored) {
-            // Plain Spigot — getIcon() not in API, silently skip
+            // Plain Spigot — getIcon() not in API
         } catch (Exception e) {
             plugin.getPluginLogger().debug("Could not resolve advancement icon: " + e.getMessage());
         }

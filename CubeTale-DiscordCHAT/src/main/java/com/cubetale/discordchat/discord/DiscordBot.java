@@ -244,8 +244,11 @@ public class DiscordBot {
     }
 
     /**
-     * @param avatarUrl  Player face URL (thumbnail, top-right corner of embed).
-     * @param iconUrl    Advancement item icon URL (large image at bottom). May be null.
+     * Fallback advancement embed (used when webhook is unavailable).
+     * The advancement item icon is shown as the thumbnail on the right.
+     *
+     * @param avatarUrl  Not used in this fallback (only one thumbnail slot).
+     * @param iconUrl    Advancement item icon shown as thumbnail. May be null.
      */
     public void sendAdvancementNotification(String playerName, String playerUUID,
                                             String advancement, String description,
@@ -254,19 +257,19 @@ public class DiscordBot {
         String chatChannelId = plugin.getConfigManager().getChatChannelId();
         if (chatChannelId == null || chatChannelId.isEmpty()) return;
 
-        EmbedBuilder embed = new EmbedBuilder()
-                .setTitle("🏆 Advancement Unlocked")
-                .setDescription("**" + playerName + "** has made the advancement **" + advancement + "**")
-                .setColor(ColorConverter.hexToInt("#FFD700"))
-                .setThumbnail(avatarUrl)
-                .setTimestamp(Instant.now());
-
+        String body = "**" + playerName + "** has made the advancement **" + advancement + "**";
         if (description != null && !description.isEmpty()) {
-            embed.addField("📖 Description", description, false);
+            body += "\n*" + description + "*";
         }
 
+        EmbedBuilder embed = new EmbedBuilder()
+                .setDescription(body)
+                .setColor(ColorConverter.hexToInt("#55FF55"))
+                .setTimestamp(Instant.now());
+
+        // Icon goes in the thumbnail slot (top-right), matching the screenshot layout
         if (iconUrl != null && !iconUrl.isEmpty()) {
-            embed.setImage(iconUrl);
+            embed.setThumbnail(iconUrl);
         }
 
         sendEmbed(chatChannelId, embed.build());

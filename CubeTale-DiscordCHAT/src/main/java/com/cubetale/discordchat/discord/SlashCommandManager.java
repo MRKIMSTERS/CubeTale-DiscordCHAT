@@ -3,6 +3,7 @@ package com.cubetale.discordchat.discord;
 import com.cubetale.discordchat.CubeTaleDiscordChat;
 import com.cubetale.discordchat.util.ColorConverter;
 import com.cubetale.discordchat.util.MessageFormatter;
+import com.cubetale.discordchat.util.MinecraftImageRenderer;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import net.dv8tion.jda.api.utils.FileUpload;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -72,42 +74,59 @@ public class SlashCommandManager extends ListenerAdapter {
         }
     }
 
+    /**
+     * Renders the online player list as a Minecraft-style image and sends it as
+     * an embed attachment so it appears inline inside the Discord message.
+     */
     private void handlePlayers(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
 
         Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
         int online = onlinePlayers.size();
-        int max = Bukkit.getMaxPlayers();
+        int max    = Bukkit.getMaxPlayers();
 
-        StringBuilder playerList = new StringBuilder();
-        if (onlinePlayers.isEmpty()) {
-            playerList.append("*No players online.*");
-        } else {
-            for (Player p : onlinePlayers) {
-                String avatarEmoji = "👤";
-                playerList.append(avatarEmoji).append(" **").append(p.getName()).append("**\n");
+        try {
+            byte[] imageBytes = MinecraftImageRenderer.renderPlayerList(onlinePlayers, max);
+
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setColor(ColorConverter.hexToInt("#7289DA"))
+                    .setImage("attachment://players.png")
+                    .setTimestamp(Instant.now());
+
+            event.getHook()
+                 .sendFiles(FileUpload.fromData(imageBytes, "players.png"))
+                 .addEmbeds(embed.build())
+                 .queue();
+        } catch (Exception e) {
+            plugin.getPluginLogger().warning("Failed to render player list image: " + e.getMessage());
+
+            // Fallback to plain text if rendering fails
+            StringBuilder playerList = new StringBuilder();
+            if (onlinePlayers.isEmpty()) {
+                playerList.append("*No players online.*");
+            } else {
+                for (Player p : onlinePlayers) {
+                    playerList.append("👤 **").append(p.getName()).append("**\n");
+                }
             }
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle("👥 Online Players (" + online + "/" + max + ")")
+                    .setDescription(playerList.toString())
+                    .setColor(ColorConverter.hexToInt("#7289DA"))
+                    .setTimestamp(Instant.now());
+            event.getHook().editOriginalEmbeds(embed.build()).queue();
         }
-
-        EmbedBuilder embed = new EmbedBuilder()
-                .setTitle("👥 Online Players (" + online + "/" + max + ")")
-                .setDescription(playerList.toString())
-                .setColor(ColorConverter.hexToInt("#7289DA"))
-                .setTimestamp(Instant.now());
-
-        event.getHook().editOriginalEmbeds(embed.build()).queue();
     }
 
     private void handleStatus(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
 
-        int online = Bukkit.getOnlinePlayers().size();
-        int max = Bukkit.getMaxPlayers();
+        int online    = Bukkit.getOnlinePlayers().size();
+        int max       = Bukkit.getMaxPlayers();
         String version = Bukkit.getVersion();
         long uptimeSeconds = (System.currentTimeMillis() - plugin.getDiscordBot().getStartTime()) / 1000;
         String uptime = MessageFormatter.formatUptime(uptimeSeconds);
 
-        // Get TPS (Paper only — use reflection for Spigot compatibility)
         double tps = 20.0;
         try {
             java.lang.reflect.Method getTpsMethod = Bukkit.getServer().getClass().getMethod("getTPS");
@@ -115,9 +134,7 @@ public class SlashCommandManager extends ListenerAdapter {
             if (tpsArray != null && tpsArray.length > 0) {
                 tps = Math.min(tpsArray[0], 20.0);
             }
-        } catch (Exception e) {
-            // Spigot doesn't expose getTPS — keep default 20.0
-        }
+        } catch (Exception ignored) {}
 
         String tpsColor = tps >= 19.0 ? "🟢" : (tps >= 15.0 ? "🟡" : "🔴");
 
@@ -135,7 +152,6 @@ public class SlashCommandManager extends ListenerAdapter {
     }
 
     private void handleExecute(SlashCommandInteractionEvent event) {
-        // Check if user has admin role
         String adminRoleId = plugin.getConfigManager().getAdminRoleId();
         if (adminRoleId != null && !adminRoleId.isEmpty() && !adminRoleId.equals("ADMIN_ROLE_ID")) {
             boolean hasRole = event.getMember() != null &&
@@ -157,11 +173,10 @@ public class SlashCommandManager extends ListenerAdapter {
             return;
         }
 
-        // Execute on main thread
         final String finalCommand = command;
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             try {
-                boolean success = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand);
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand);
                 plugin.getPluginLogger().info("[Discord Execute] " + event.getUser().getAsTag() + ": " + finalCommand);
             } catch (Exception e) {
                 plugin.getPluginLogger().warning("Error executing Discord command: " + e.getMessage());
@@ -177,10 +192,9 @@ public class SlashCommandManager extends ListenerAdapter {
             return;
         }
 
-        String discordId = event.getUser().getId();
+        String discordId  = event.getUser().getId();
         String discordTag = event.getUser().getAsTag();
 
-        // Check if code was provided
         if (event.getOption("code") != null) {
             String code = event.getOption("code").getAsString();
             boolean success = plugin.getLinkManager().linkWithCode(code, discordId, discordTag);
@@ -190,7 +204,6 @@ public class SlashCommandManager extends ListenerAdapter {
                 event.reply("❌ Invalid or expired code. Use `/link` in Minecraft to get a new code.").setEphemeral(true).queue();
             }
         } else {
-            // Just show instructions
             if (plugin.getDatabaseManager().isDiscordLinked(discordId)) {
                 event.reply("ℹ️ Your Discord account is already linked to a Minecraft account.").setEphemeral(true).queue();
             } else {

@@ -28,6 +28,9 @@ Located in `CubeTale-DiscordCHAT/`. Built with Maven.
 - Role sync via LuckPerms
 - Console channel (live feed + execute commands from Discord)
 - Event notifications (join/leave, death, advancements, server start/stop)
+- **`[item]` in chat** — player types `[item]` and the plugin renders their held item as a Minecraft-style tooltip image sent to Discord via webhook (with player avatar)
+- **Advancement notifications via webhook** — player avatar + advancement icon as thumbnail on the right side
+- **`/players` image** — Discord slash command renders an online player list as a Minecraft-style image with LuckPerms rank prefix (coloured) + ping signal bars
 - Discord slash commands (`/players`, `/status`, `/execute`, `/link`)
 - PlaceholderAPI expansion
 - SQLite/MySQL storage with HikariCP

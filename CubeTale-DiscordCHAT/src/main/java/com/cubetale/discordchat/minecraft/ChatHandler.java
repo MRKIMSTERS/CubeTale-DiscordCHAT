@@ -2,11 +2,13 @@ package com.cubetale.discordchat.minecraft;
 
 import com.cubetale.discordchat.CubeTaleDiscordChat;
 import com.cubetale.discordchat.util.MessageFormatter;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class ChatHandler implements Listener {
 
@@ -19,13 +21,17 @@ public class ChatHandler implements Listener {
     /**
      * Listen to Minecraft player chat and forward to Discord via webhook.
      * Uses AsyncPlayerChatEvent for compatibility with Spigot.
+     *
+     * Special trigger: if the player includes "[item]" anywhere in their message,
+     * the plugin also renders their held item as a Minecraft-style tooltip image
+     * and sends it to Discord.
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         if (!plugin.getConfigManager().isChatSyncEnabled()) return;
         if (!plugin.getConfigManager().isMinecraftToDiscordEnabled()) return;
 
-        Player player = event.getPlayer();
+        Player player  = event.getPlayer();
         String message = event.getMessage();
 
         // Check message length
@@ -43,8 +49,32 @@ public class ChatHandler implements Listener {
 
         final String finalMessage = message;
 
-        // Send to Discord via webhook (already on async thread)
+        // Detect [item] keyword (case-insensitive)
+        if (containsItemTrigger(message)) {
+            // We need the main thread to safely read inventory; schedule sync task
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                ItemStack held = player.getInventory().getItemInMainHand();
+                if (held.getType() != Material.AIR) {
+                    // Clone so async thread gets a stable copy
+                    ItemStack itemCopy = held.clone();
+                    // Go async for rendering + sending
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                        plugin.getWebhookManager().sendItemDisplayWebhook(player, itemCopy);
+                        plugin.getPluginLogger().debug(
+                                "Item display sent for " + player.getName()
+                                + ": " + itemCopy.getType().getKey());
+                    });
+                }
+            });
+        }
+
+        // Always forward the original chat message
         plugin.getWebhookManager().sendPlayerChat(player, finalMessage);
         plugin.getPluginLogger().debug("Chat forwarded to Discord for " + player.getName());
+    }
+
+    /** Returns true if the message contains [item] in any case. */
+    private static boolean containsItemTrigger(String message) {
+        return message.toLowerCase().contains("[item]");
     }
 }
