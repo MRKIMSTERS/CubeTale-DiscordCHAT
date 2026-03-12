@@ -64,7 +64,8 @@ public class WebhookManager {
             return;
         }
 
-        String avatarUrl = avatarBuilder.getAvatarUrl(player);
+        int size = plugin.getConfigManager().getAvatarSize();
+        String avatarUrl = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, size);
         String username = buildWebhookUsername(player);
         String discordMessage = formatForDiscord(message);
 

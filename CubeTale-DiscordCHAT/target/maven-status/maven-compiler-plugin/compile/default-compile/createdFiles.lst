@@ -1,5 +1,6 @@
 com/cubetale/discordchat/util/MessageFormatter.class
 com/cubetale/discordchat/linking/VerificationManager.class
+com/cubetale/discordchat/util/SkinsRestorerHook.class
 com/cubetale/discordchat/console/ConsoleManager.class
 com/cubetale/discordchat/console/ConsoleManager$ConsoleLogHandler.class
 com/cubetale/discordchat/sync/RoleSyncManager.class

@@ -193,13 +193,10 @@ public class DiscordBot {
         sendEmbed(chatChannelId, embed.build());
     }
 
-    public void sendPlayerJoinNotification(String playerName, String playerUUID) {
+    public void sendPlayerJoinNotification(String playerName, String playerUUID, String avatarUrl) {
         if (!plugin.getConfigManager().isJoinEnabled()) return;
         String chatChannelId = plugin.getConfigManager().getChatChannelId();
         if (chatChannelId == null || chatChannelId.isEmpty()) return;
-
-        String avatarUrl = plugin.getWebhookManager().getAvatarBuilder()
-                .getAvatarUrl(java.util.UUID.fromString(playerUUID), playerName);
 
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("✅ Player Joined")
@@ -213,13 +210,10 @@ public class DiscordBot {
         sendEmbed(chatChannelId, embed.build());
     }
 
-    public void sendPlayerLeaveNotification(String playerName, String playerUUID) {
+    public void sendPlayerLeaveNotification(String playerName, String playerUUID, String avatarUrl) {
         if (!plugin.getConfigManager().isLeaveEnabled()) return;
         String chatChannelId = plugin.getConfigManager().getChatChannelId();
         if (chatChannelId == null || chatChannelId.isEmpty()) return;
-
-        String avatarUrl = plugin.getWebhookManager().getAvatarBuilder()
-                .getAvatarUrl(java.util.UUID.fromString(playerUUID), playerName);
 
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("❌ Player Left")
@@ -233,13 +227,11 @@ public class DiscordBot {
         sendEmbed(chatChannelId, embed.build());
     }
 
-    public void sendPlayerDeathNotification(String playerName, String playerUUID, String deathMessage) {
+    public void sendPlayerDeathNotification(String playerName, String playerUUID,
+                                            String deathMessage, String avatarUrl) {
         if (!plugin.getConfigManager().isDeathEnabled()) return;
         String chatChannelId = plugin.getConfigManager().getChatChannelId();
         if (chatChannelId == null || chatChannelId.isEmpty()) return;
-
-        String avatarUrl = plugin.getWebhookManager().getAvatarBuilder()
-                .getAvatarUrl(java.util.UUID.fromString(playerUUID), playerName);
 
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("💀 Player Death")
@@ -251,14 +243,16 @@ public class DiscordBot {
         sendEmbed(chatChannelId, embed.build());
     }
 
+    /**
+     * @param avatarUrl  Player face URL (thumbnail, top-right corner of embed).
+     * @param iconUrl    Advancement item icon URL (large image at bottom). May be null.
+     */
     public void sendAdvancementNotification(String playerName, String playerUUID,
-                                            String advancement, String description) {
+                                            String advancement, String description,
+                                            String avatarUrl, String iconUrl) {
         if (!plugin.getConfigManager().isAdvancementEnabled()) return;
         String chatChannelId = plugin.getConfigManager().getChatChannelId();
         if (chatChannelId == null || chatChannelId.isEmpty()) return;
-
-        String avatarUrl = plugin.getWebhookManager().getAvatarBuilder()
-                .getAvatarUrl(java.util.UUID.fromString(playerUUID), playerName);
 
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("🏆 Advancement Unlocked")
@@ -269,6 +263,10 @@ public class DiscordBot {
 
         if (description != null && !description.isEmpty()) {
             embed.addField("📖 Description", description, false);
+        }
+
+        if (iconUrl != null && !iconUrl.isEmpty()) {
+            embed.setImage(iconUrl);
         }
 
         sendEmbed(chatChannelId, embed.build());
