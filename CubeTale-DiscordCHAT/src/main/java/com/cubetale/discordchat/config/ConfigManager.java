@@ -57,7 +57,7 @@ public class ConfigManager {
     }
 
     public String getAvatarService() {
-        return config.getString("discord.webhook.avatar-service", "crafatar");
+        return config.getString("discord.webhook.avatar-service", "mcheads");
     }
 
     public int getAvatarSize() {

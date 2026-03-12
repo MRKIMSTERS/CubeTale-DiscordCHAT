@@ -17,8 +17,9 @@ discord:
   webhook:
     enabled: true
     url: "YOUR_WEBHOOK_URL_HERE"
-    # Avatar service: crafatar (recommended), mcheads, cravatar, minotar
-    avatar-service: "crafatar"
+    # Avatar service: mcheads (recommended), crafatar, cravatar, minotar
+    # Example URL : https://mc-heads.net/avatar/e66479cd-6b57-4ffb-9551-d41c2a883a55/128
+    avatar-service: "mcheads"
     avatar-size: 128
     show-overlay: true
 

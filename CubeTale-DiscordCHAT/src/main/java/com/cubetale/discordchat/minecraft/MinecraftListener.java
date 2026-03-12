@@ -63,14 +63,8 @@ public class MinecraftListener implements Listener {
                 ? MessageFormatter.stripColors(event.getDeathMessage())
                 : playerName + " died.";
 
-        int x = player.getLocation().getBlockX();
-        int y = player.getLocation().getBlockY();
-        int z = player.getLocation().getBlockZ();
-        String world = player.getWorld().getName();
-
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            plugin.getDiscordBot().sendPlayerDeathNotification(
-                    playerName, playerUUID, deathMessage, x, y, z, world);
+            plugin.getDiscordBot().sendPlayerDeathNotification(playerName, playerUUID, deathMessage);
             plugin.getPluginLogger().debug("Death notification sent for " + playerName);
         });
     }

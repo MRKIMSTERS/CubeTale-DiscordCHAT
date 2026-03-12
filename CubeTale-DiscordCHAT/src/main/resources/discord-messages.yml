@@ -4,6 +4,7 @@
 # Placeholders: {player}, {uuid}, {message}, {server}, {online}, {max}
 # Death: {death-message}, {x}, {y}, {z}, {world}
 # Advancement: {advancement}, {description}
+# Avatar URL pattern: https://mc-heads.net/avatar/{uuid}/128
 
 messages:
 
@@ -12,7 +13,7 @@ messages:
       title: "✅ Player Joined"
       description: "**{player}** joined the server!"
       color: "#00FF00"
-      thumbnail: "https://crafatar.com/avatars/{uuid}?size=128&overlay"
+      thumbnail: "https://mc-heads.net/avatar/{uuid}/128"
       footer: "Players Online: {online}/{max}"
 
   leave:
@@ -20,7 +21,7 @@ messages:
       title: "❌ Player Left"
       description: "**{player}** left the server."
       color: "#FF5555"
-      thumbnail: "https://crafatar.com/avatars/{uuid}?size=128&overlay"
+      thumbnail: "https://mc-heads.net/avatar/{uuid}/128"
       footer: "Players Online: {online}/{max}"
 
   death:
@@ -28,21 +29,14 @@ messages:
       title: "💀 Player Death"
       description: "{death-message}"
       color: "#8B0000"
-      thumbnail: "https://crafatar.com/avatars/{uuid}?size=128&overlay"
-      fields:
-        - name: "📍 Location"
-          value: "X: {x}, Y: {y}, Z: {z}"
-          inline: true
-        - name: "🌍 World"
-          value: "{world}"
-          inline: true
+      thumbnail: "https://mc-heads.net/avatar/{uuid}/128"
 
   advancement:
     embed:
       title: "🏆 Advancement Unlocked"
       description: "**{player}** has made the advancement **{advancement}**"
       color: "#FFD700"
-      thumbnail: "https://crafatar.com/avatars/{uuid}?size=128&overlay"
+      thumbnail: "https://mc-heads.net/avatar/{uuid}/128"
       fields:
         - name: "📖 Description"
           value: "{description}"
@@ -66,7 +60,7 @@ messages:
       title: "🔗 Account Linked"
       description: "Your Discord account has been linked to **{player}**!"
       color: "#7289DA"
-      thumbnail: "https://crafatar.com/avatars/{uuid}?size=128&overlay"
+      thumbnail: "https://mc-heads.net/avatar/{uuid}/128"
 
   link-code:
     dm-message: |

@@ -233,8 +233,7 @@ public class DiscordBot {
         sendEmbed(chatChannelId, embed.build());
     }
 
-    public void sendPlayerDeathNotification(String playerName, String playerUUID,
-                                            String deathMessage, int x, int y, int z, String world) {
+    public void sendPlayerDeathNotification(String playerName, String playerUUID, String deathMessage) {
         if (!plugin.getConfigManager().isDeathEnabled()) return;
         String chatChannelId = plugin.getConfigManager().getChatChannelId();
         if (chatChannelId == null || chatChannelId.isEmpty()) return;
@@ -248,11 +247,6 @@ public class DiscordBot {
                 .setColor(ColorConverter.hexToInt("#8B0000"))
                 .setThumbnail(avatarUrl)
                 .setTimestamp(Instant.now());
-
-        if (plugin.getConfigManager().isShowDeathCoordinates()) {
-            embed.addField("📍 Location", "X: " + x + ", Y: " + y + ", Z: " + z, true);
-            embed.addField("🌍 World", world, true);
-        }
 
         sendEmbed(chatChannelId, embed.build());
     }
