@@ -1,0 +1,45 @@
+name: CubeTale-DiscordCHAT
+version: '1.0.0'
+main: com.cubetale.discordchat.CubeTaleDiscordChat
+api-version: '1.21'
+author: CubeTale
+description: A modern Minecraft-Discord integration with webhook avatar support
+website: https://github.com/CubeTale/CubeTale-DiscordCHAT
+
+softdepend: [LuckPerms, PlaceholderAPI]
+
+commands:
+  cubetaledc:
+    description: Main CubeTale-DiscordCHAT admin command
+    aliases: [ctd, ctdchat]
+    usage: /<command> [reload|status|debug]
+    permission: cubetale.admin
+  link:
+    description: Link your Minecraft account with Discord
+    usage: /<command> [code]
+    permission: cubetale.link
+  unlink:
+    description: Unlink your Minecraft account from Discord
+    usage: /<command>
+    permission: cubetale.unlink
+  linked:
+    description: Check your link status or another player's
+    usage: /<command> [player]
+    permission: cubetale.link
+
+permissions:
+  cubetale.admin:
+    description: Full admin access to CubeTale-DiscordCHAT
+    default: op
+  cubetale.link:
+    description: Permission to use /link and /linked commands
+    default: true
+  cubetale.unlink:
+    description: Permission to use /unlink command
+    default: true
+  cubetale.bypass.filter:
+    description: Bypass chat message filters
+    default: op
+  cubetale.discord.console:
+    description: Execute console commands from Discord
+    default: false

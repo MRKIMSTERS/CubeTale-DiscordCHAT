@@ -107,13 +107,16 @@ public class SlashCommandManager extends ListenerAdapter {
         long uptimeSeconds = (System.currentTimeMillis() - plugin.getDiscordBot().getStartTime()) / 1000;
         String uptime = MessageFormatter.formatUptime(uptimeSeconds);
 
-        // Get TPS
+        // Get TPS (Paper only — use reflection for Spigot compatibility)
         double tps = 20.0;
         try {
-            double[] tpsArray = Bukkit.getTPS();
-            tps = Math.min(tpsArray[0], 20.0);
+            java.lang.reflect.Method getTpsMethod = Bukkit.getServer().getClass().getMethod("getTPS");
+            double[] tpsArray = (double[]) getTpsMethod.invoke(Bukkit.getServer());
+            if (tpsArray != null && tpsArray.length > 0) {
+                tps = Math.min(tpsArray[0], 20.0);
+            }
         } catch (Exception e) {
-            // Ignore, keep default
+            // Spigot doesn't expose getTPS — keep default 20.0
         }
 
         String tpsColor = tps >= 19.0 ? "🟢" : (tps >= 15.0 ? "🟡" : "🔴");

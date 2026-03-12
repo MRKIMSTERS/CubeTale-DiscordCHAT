@@ -84,7 +84,7 @@ public class MinecraftListener implements Listener {
         AdvancementDisplay display = advancement.getDisplay();
 
         // Only notify for advancements that have a visible display
-        if (display == null || !display.doesAnnounceToChat()) return;
+        if (display == null || !display.shouldAnnounceChat()) return;
 
         Player player = event.getPlayer();
         String playerName = player.getName();

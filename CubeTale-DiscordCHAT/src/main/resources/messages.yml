@@ -8,10 +8,12 @@ prefix: "&8[&9CubeTale&8-&bDiscord&8] "
 
 link:
   already-linked: "{prefix}&cYou are already linked to Discord account &e{discord}&c!"
-  prompt: "{prefix}&aTo link your account, go to Discord and type &e/link&a. Then use &e/link {code}&a in Minecraft."
+  prompt: "{prefix}&aTo link your account, go to Discord and type &e/link&a. Then use &e/link {code}&a in Minecraft.\n{prefix}&eYour code: &6{code} &7(expires in {time}s)"
   invalid-code: "{prefix}&cInvalid or expired code! Request a new one with &e/link&c."
   success: "{prefix}&aSuccessfully linked to Discord account &e{discord}&a!"
   expired: "{prefix}&cYour verification code has expired. Use &e/link&c to get a new one."
+  disabled: "{prefix}&cAccount linking is disabled on this server."
+  rate-limited: "{prefix}&cPlease wait &e{seconds}s&c before requesting a new code."
 
 unlink:
   not-linked: "{prefix}&cYou are not linked to any Discord account."

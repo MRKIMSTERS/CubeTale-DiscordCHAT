@@ -212,6 +212,15 @@ public class ConfigManager {
         return config.getString("placeholderapi.username-format", "");
     }
 
+    // Role sync
+    public boolean isRoleSyncEnabled() {
+        return config.getBoolean("role-sync.enabled", false);
+    }
+
+    public int getRoleSyncInterval() {
+        return config.getInt("role-sync.sync-interval", 300);
+    }
+
     // Debug
     public boolean isDebugEnabled() {
         return config.getBoolean("debug", false);

@@ -148,10 +148,4 @@ public class LinkManager {
         });
     }
 
-    /**
-     * Check if role-sync is enabled (for convenience).
-     */
-    private boolean isRoleSyncEnabled() {
-        return plugin.getConfig().getBoolean("role-sync.enabled", false);
-    }
 }

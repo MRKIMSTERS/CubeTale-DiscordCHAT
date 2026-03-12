@@ -2,6 +2,55 @@
 
 ## Overview
 
+This repo contains two independent projects:
+
+1. **CubeTale-DiscordCHAT** — A Minecraft Spigot/Paper 1.21+ plugin (Java/Maven) that integrates Minecraft servers with Discord.
+2. **TypeScript pnpm monorepo** — An Express 5 API server with shared libraries.
+
+---
+
+## CubeTale-DiscordCHAT (Java Plugin)
+
+Located in `CubeTale-DiscordCHAT/`. Built with Maven.
+
+- **Java**: 17+
+- **Build**: `cd CubeTale-DiscordCHAT && mvn clean package`
+- **Output**: `CubeTale-DiscordCHAT/target/CubeTale-DiscordCHAT-1.0.0.jar`
+- **API**: Spigot 1.21 + Paper 1.21 (both provided)
+- **Discord**: JDA 5 + discord-webhooks 0.8.4
+- **Database**: HikariCP + SQLite (default) or MySQL
+- **CI**: `.github/workflows/build.yml`
+
+### Features
+- Bidirectional chat sync (Minecraft ↔ Discord)
+- Player skin head avatars via Discord Webhooks
+- Account linking (`/link`, `/unlink`, `/linked`)
+- Role sync via LuckPerms
+- Console channel (live feed + execute commands from Discord)
+- Event notifications (join/leave, death, advancements, server start/stop)
+- Discord slash commands (`/players`, `/status`, `/execute`, `/link`)
+- PlaceholderAPI expansion
+- SQLite/MySQL storage with HikariCP
+
+### Package structure
+```
+com.cubetale.discordchat/
+├── CubeTaleDiscordChat.java      # Main plugin class
+├── config/                       # ConfigManager, MessagesConfig
+├── discord/                      # DiscordBot (JDA), DiscordListener, SlashCommandManager, WebhookManager
+├── minecraft/                    # MinecraftListener, ChatHandler, CommandManager
+├── linking/                      # LinkManager, LinkCommand, VerificationManager
+├── sync/                         # RoleSyncManager, GroupMapper
+├── console/                      # ConsoleManager
+├── database/                     # DatabaseManager (SQLite + MySQL via HikariCP)
+├── placeholders/                 # DiscordPlaceholderExpansion (PAPI)
+└── util/                         # AvatarUrlBuilder, ColorConverter, MessageFormatter, PluginLogger
+```
+
+---
+
+## TypeScript Monorepo
+
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
 ## Stack
