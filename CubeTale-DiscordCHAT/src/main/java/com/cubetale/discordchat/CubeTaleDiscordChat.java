@@ -14,6 +14,7 @@ import com.cubetale.discordchat.minecraft.MinecraftListener;
 import com.cubetale.discordchat.placeholders.DiscordPlaceholderExpansion;
 import com.cubetale.discordchat.sync.RoleSyncManager;
 import com.cubetale.discordchat.util.PluginLogger;
+import com.cubetale.discordchat.util.InteractiveChatHook;
 import com.cubetale.discordchat.util.SkinsRestorerHook;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -31,6 +32,7 @@ public class CubeTaleDiscordChat extends JavaPlugin {
     private ConsoleManager consoleManager;
     private PluginLogger pluginLogger;
     private SkinsRestorerHook skinsRestorerHook;
+    private InteractiveChatHook interactiveChatHook;
     private StatsAutoPost statsAutoPost;
 
     @Override
@@ -98,6 +100,9 @@ public class CubeTaleDiscordChat extends JavaPlugin {
 
         // SkinsRestorer hook (soft dependency)
         skinsRestorerHook = new SkinsRestorerHook(this);
+
+        // InteractiveChat hook (soft dependency)
+        interactiveChatHook = new InteractiveChatHook(this);
 
         // PlaceholderAPI hook
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
@@ -211,5 +216,9 @@ public class CubeTaleDiscordChat extends JavaPlugin {
 
     public SkinsRestorerHook getSkinsRestorerHook() {
         return skinsRestorerHook;
+    }
+
+    public InteractiveChatHook getInteractiveChatHook() {
+        return interactiveChatHook;
     }
 }

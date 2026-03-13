@@ -17,6 +17,7 @@ com/cubetale/discordchat/linking/LinkCommand.class
 com/cubetale/discordchat/placeholders/DiscordPlaceholderExpansion.class
 com/cubetale/discordchat/discord/WebhookManager.class
 com/cubetale/discordchat/linking/LinkManager.class
+com/cubetale/discordchat/util/InteractiveChatHook.class
 com/cubetale/discordchat/config/ConfigManager.class
 com/cubetale/discordchat/util/AvatarUrlBuilder.class
 com/cubetale/discordchat/discord/DiscordListener.class

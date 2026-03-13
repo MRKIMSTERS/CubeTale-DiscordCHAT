@@ -200,6 +200,58 @@ public class WebhookManager {
         }
     }
 
+    // ── Ender-chest display ───────────────────────────────────────────────────────
+
+    /**
+     * Renders the player's ender chest (27 slots) as a Minecraft-style grid image
+     * and sends it via webhook.
+     * Called from an async context.
+     */
+    public void sendEnderChestWebhook(Player player, ItemStack[] contents) {
+        if (!plugin.getDiscordBot().isConnected()) return;
+        String chatChannelId = plugin.getConfigManager().getChatChannelId();
+        if (chatChannelId == null || chatChannelId.isEmpty()) return;
+
+        String avatarUrl = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
+        String username  = buildWebhookUsername(player);
+
+        try {
+            byte[] imageBytes = MinecraftImageRenderer.renderInventory(contents, player.getName());
+            if (imageBytes == null) return;
+
+            WebhookEmbedBuilder embed = new WebhookEmbedBuilder()
+                    .setTitle(new WebhookEmbed.EmbedTitle(username + "'s Ender Chest", null))
+                    .setColor(0x660066)
+                    .setImageUrl("attachment://enderchest.png");
+
+            if (webhookClient != null) {
+                WebhookMessageBuilder msg = new WebhookMessageBuilder()
+                        .setUsername(username)
+                        .setAvatarUrl(avatarUrl)
+                        .addEmbeds(embed.build())
+                        .addFile("enderchest.png", imageBytes);
+                webhookClient.send(msg.build());
+            } else {
+                net.dv8tion.jda.api.entities.channel.concrete.TextChannel channel =
+                        plugin.getDiscordBot().getJda().getTextChannelById(chatChannelId);
+                if (channel == null) return;
+
+                net.dv8tion.jda.api.EmbedBuilder jdaEmbed = new net.dv8tion.jda.api.EmbedBuilder()
+                        .setTitle(username + "'s Ender Chest")
+                        .setColor(0x660066)
+                        .setImage("attachment://enderchest.png");
+
+                channel.sendFiles(net.dv8tion.jda.api.utils.FileUpload.fromData(imageBytes, "enderchest.png"))
+                       .addEmbeds(jdaEmbed.build())
+                       .queue();
+            }
+
+            plugin.getPluginLogger().debug("Ender chest display sent for " + player.getName());
+        } catch (Exception e) {
+            plugin.getPluginLogger().warning("Failed to send ender chest display: " + e.getMessage());
+        }
+    }
+
     // ── Advancement (webhook embed with player avatar + icon thumbnail) ───────────
 
     /**

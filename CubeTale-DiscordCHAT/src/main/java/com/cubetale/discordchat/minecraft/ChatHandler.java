@@ -1,6 +1,7 @@
 package com.cubetale.discordchat.minecraft;
 
 import com.cubetale.discordchat.CubeTaleDiscordChat;
+import com.cubetale.discordchat.util.InteractiveChatHook;
 import com.cubetale.discordchat.util.MessageFormatter;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -10,6 +11,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Listens to Minecraft player chat and forwards messages to Discord.
+ *
+ * Interactive-render triggers (works standalone AND when InteractiveChat is installed):
+ *   [item]        — renders the player's held item as a Minecraft tooltip image
+ *   [inv]         — renders the player's full inventory as a grid image
+ *   [enderchest]  — renders the player's ender chest contents as a grid image
+ *   [ec]          — alias for [enderchest]
+ *
+ * When InteractiveChat is installed, any additional IC-registered custom placeholders
+ * are also detected and stripped from the Discord-bound text message.
+ */
 public class ChatHandler implements Listener {
 
     private final CubeTaleDiscordChat plugin;
@@ -18,39 +31,30 @@ public class ChatHandler implements Listener {
         this.plugin = plugin;
     }
 
-    /**
-     * Listen to Minecraft player chat and forward to Discord via webhook.
-     * Uses AsyncPlayerChatEvent for compatibility with Spigot.
-     *
-     * Special trigger: if the player includes "[item]" anywhere in their message,
-     * the plugin also renders their held item as a Minecraft-style tooltip image
-     * and sends it to Discord.
-     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         if (!plugin.getConfigManager().isChatSyncEnabled()) return;
         if (!plugin.getConfigManager().isMinecraftToDiscordEnabled()) return;
 
-        Player player  = event.getPlayer();
+        Player player = event.getPlayer();
         String message = event.getMessage();
 
-        // Check message length
+        // Enforce max length
         if (message.length() > plugin.getConfigManager().getMaxMessageLength()) {
             message = MessageFormatter.truncate(message, plugin.getConfigManager().getMaxMessageLength());
         }
 
-        // Check for links
-        if (!plugin.getConfigManager().isLinksAllowed()) {
-            if (MessageFormatter.containsUrl(message)) {
-                plugin.getPluginLogger().debug("Blocked message with URL from " + player.getName());
-                return;
-            }
+        // Block bare URLs if configured
+        if (!plugin.getConfigManager().isLinksAllowed() && MessageFormatter.containsUrl(message)) {
+            plugin.getPluginLogger().debug("Blocked message with URL from " + player.getName());
+            return;
         }
 
-        final String finalMessage = message;
+        final String rawMessage = message;
+        final InteractiveChatHook ic = plugin.getInteractiveChatHook();
 
-        // ── [item] trigger ────────────────────────────────────────────────────
-        if (containsTrigger(message, "[item]")) {
+        // ── [item] ────────────────────────────────────────────────────────────
+        if (InteractiveChatHook.hasTrigger(rawMessage, InteractiveChatHook.TRIGGER_ITEM)) {
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 ItemStack held = player.getInventory().getItemInMainHand();
                 if (held.getType() != Material.AIR) {
@@ -64,19 +68,19 @@ public class ChatHandler implements Listener {
             });
         }
 
-        // ── [inv] trigger ─────────────────────────────────────────────────────
-        if (containsTrigger(message, "[inv]")) {
+        // ── [inv] ─────────────────────────────────────────────────────────────
+        if (InteractiveChatHook.hasTrigger(rawMessage, InteractiveChatHook.TRIGGER_INV)
+                || InteractiveChatHook.hasTrigger(rawMessage, "[inventory]")) {
             plugin.getServer().getScheduler().runTask(plugin, () -> {
-                // Build a full 41-slot array: 0-35 main+hotbar, 36-39 armor, 40 offhand
                 ItemStack[] full = new ItemStack[41];
-                ItemStack[] main = player.getInventory().getContents();
-                System.arraycopy(main, 0, full, 0, Math.min(main.length, 36));
+                ItemStack[] main  = player.getInventory().getContents();
                 ItemStack[] armor = player.getInventory().getArmorContents();
-                if (armor != null) {
-                    for (int i = 0; i < Math.min(armor.length, 4); i++) full[36 + i] = armor[i];
-                }
                 ItemStack[] extra = player.getInventory().getExtraContents();
+                System.arraycopy(main, 0, full, 0, Math.min(main.length, 36));
+                if (armor != null)
+                    for (int i = 0; i < Math.min(armor.length, 4); i++) full[36 + i] = armor[i];
                 if (extra != null && extra.length > 0) full[40] = extra[0];
+
                 plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                     plugin.getWebhookManager().sendInventoryWebhook(player, full);
                     plugin.getPluginLogger().debug("[inv] sent for " + player.getName());
@@ -84,12 +88,27 @@ public class ChatHandler implements Listener {
             });
         }
 
-        // Always forward the original chat message
-        plugin.getWebhookManager().sendPlayerChat(player, finalMessage);
-        plugin.getPluginLogger().debug("Chat forwarded to Discord for " + player.getName());
-    }
+        // ── [enderchest] / [ec] ───────────────────────────────────────────────
+        if (InteractiveChatHook.hasTrigger(rawMessage, InteractiveChatHook.TRIGGER_ENDERCHEST)
+                || InteractiveChatHook.hasTrigger(rawMessage, InteractiveChatHook.TRIGGER_EC_SHORT)) {
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                ItemStack[] ec = player.getEnderChest().getContents().clone();
+                plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                    plugin.getWebhookManager().sendEnderChestWebhook(player, ec);
+                    plugin.getPluginLogger().debug("[enderchest] sent for " + player.getName());
+                });
+            });
+        }
 
-    private static boolean containsTrigger(String message, String trigger) {
-        return message.toLowerCase().contains(trigger);
+        // ── Forward to Discord — strip all IC trigger tokens first ─────────────
+        // Removing [item] / [inv] / [enderchest] and any custom IC placeholders
+        // keeps the Discord message clean. If the whole message was just a trigger
+        // (e.g. someone typed only "[item]") the image embed is the full context,
+        // so we skip forwarding an empty string.
+        String discordText = ic.stripTriggers(rawMessage);
+        if (!discordText.isEmpty()) {
+            plugin.getWebhookManager().sendPlayerChat(player, discordText);
+            plugin.getPluginLogger().debug("Chat forwarded to Discord for " + player.getName());
+        }
     }
 }

@@ -6,7 +6,7 @@ authors: [MRKIMSTERS, "CubeTale Developments (MrKiro_)"]
 description: A modern Minecraft-Discord integration with webhook avatar support
 website: https://github.com/MRKIMSTERS/CubeTale-DiscordCHAT
 
-softdepend: [LuckPerms, PlaceholderAPI, SkinsRestorer]
+softdepend: [LuckPerms, PlaceholderAPI, SkinsRestorer, InteractiveChat]
 
 commands:
   cubetaledc:

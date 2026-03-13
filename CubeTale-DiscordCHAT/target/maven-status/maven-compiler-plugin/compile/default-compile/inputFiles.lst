@@ -20,6 +20,7 @@
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/linking/LinkManager.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/minecraft/MinecraftListener.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/discord/SlashCommandManager.java
+/home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/util/InteractiveChatHook.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/config/MessagesConfig.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/discord/DiscordBot.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/util/ColorConverter.java
