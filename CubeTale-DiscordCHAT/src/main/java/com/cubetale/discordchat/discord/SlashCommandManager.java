@@ -14,6 +14,8 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 
 import java.time.Instant;
@@ -44,6 +46,13 @@ public class SlashCommandManager extends ListenerAdapter {
 
         commands.add(Commands.slash("status", "Check the server status"));
 
+        commands.add(Commands.slash("profile", "View a Minecraft player's profile card")
+                .addOption(OptionType.STRING, "player", "Player name (defaults to your linked account)", false));
+
+        commands.add(Commands.slash("dm", "Send a private message to an online Minecraft player")
+                .addOption(OptionType.STRING, "player", "Minecraft player name", true)
+                .addOption(OptionType.STRING, "message", "Your message", true));
+
         commands.add(Commands.slash("execute", "Execute a server console command (admin only)")
                 .addOption(OptionType.STRING, "command", "The command to execute", true));
 
@@ -64,6 +73,12 @@ public class SlashCommandManager extends ListenerAdapter {
                 break;
             case "status":
                 handleStatus(event);
+                break;
+            case "profile":
+                handleProfile(event);
+                break;
+            case "dm":
+                handleDm(event);
                 break;
             case "execute":
                 handleExecute(event);
@@ -149,6 +164,131 @@ public class SlashCommandManager extends ListenerAdapter {
                 .setTimestamp(Instant.now());
 
         event.getHook().editOriginalEmbeds(embed.build()).queue();
+    }
+
+    /**
+     * Renders a player profile card image showing head, rank, online status, and key stats.
+     * Reads stats on the main thread, then renders + replies asynchronously.
+     */
+    private void handleProfile(SlashCommandInteractionEvent event) {
+        event.deferReply().queue();
+
+        String inputName = event.getOption("player") != null
+                ? event.getOption("player").getAsString()
+                : null;
+
+        // If no name supplied, try to find their linked Minecraft account
+        if (inputName == null || inputName.isEmpty()) {
+            java.util.UUID linkedUuid = plugin.getDatabaseManager().getMinecraftUUID(event.getUser().getId());
+            if (linkedUuid == null) {
+                event.getHook().editOriginal(
+                        "❌ No player specified and your Discord account is not linked. " +
+                        "Use `/link` in Minecraft first, or provide a player name.").queue();
+                return;
+            }
+            OfflinePlayer linked = Bukkit.getOfflinePlayer(linkedUuid);
+            inputName = linked.getName() != null ? linked.getName() : linkedUuid.toString();
+        }
+
+        final String playerName = inputName;
+
+        // Read stats on main thread (Bukkit stats API is thread-safe for reads, but safer on main)
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
+            boolean online        = offline.isOnline();
+            String  uuid          = offline.getUniqueId().toString();
+            String  rankPrefix    = "";
+
+            int deaths    = 0;
+            int kills     = 0;
+            int mobKills  = 0;
+            long played   = 0L;
+
+            try { deaths   = offline.getStatistic(Statistic.DEATHS);         } catch (Exception ignored) {}
+            try { kills    = offline.getStatistic(Statistic.PLAYER_KILLS);    } catch (Exception ignored) {}
+            try { mobKills = offline.getStatistic(Statistic.MOB_KILLS);       } catch (Exception ignored) {}
+            try { played   = offline.getStatistic(Statistic.PLAY_ONE_MINUTE); } catch (Exception ignored) {}
+
+            if (online && offline.getPlayer() != null) {
+                rankPrefix = MinecraftImageRenderer.resolvePrefix(offline.getPlayer());
+            } else {
+                rankPrefix = MinecraftImageRenderer.resolveOfflinePrefix(offline);
+            }
+
+            final String  fRank    = rankPrefix;
+            final int     fDeaths  = deaths;
+            final int     fKills   = kills;
+            final int     fMobs    = mobKills;
+            final long    fPlayed  = played;
+
+            // Render + reply off main thread
+            plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                try {
+                    byte[] imageBytes = MinecraftImageRenderer.renderProfileCard(
+                            playerName, uuid, fRank, online, fDeaths, fKills, fMobs, fPlayed);
+
+                    EmbedBuilder embed = new EmbedBuilder()
+                            .setColor(online ? 0x55FF55 : 0xFF5555)
+                            .setImage("attachment://profile.png")
+                            .setTimestamp(Instant.now());
+
+                    event.getHook()
+                         .sendFiles(FileUpload.fromData(imageBytes, "profile.png"))
+                         .addEmbeds(embed.build())
+                         .queue();
+                } catch (Exception e) {
+                    plugin.getPluginLogger().warning("Failed to render profile card: " + e.getMessage());
+                    event.getHook().editOriginal("❌ Could not generate profile card for **" + playerName + "**.").queue();
+                }
+            });
+        });
+    }
+
+    /**
+     * Sends a private message from a Discord user to an online Minecraft player.
+     * The message appears in-game with a [Discord DM] prefix.
+     */
+    private void handleDm(SlashCommandInteractionEvent event) {
+        if (!plugin.getConfigManager().isDiscordDmEnabled()) {
+            event.reply("❌ Discord → Minecraft DMs are disabled on this server.").setEphemeral(true).queue();
+            return;
+        }
+
+        String targetName = event.getOption("player") != null ? event.getOption("player").getAsString() : "";
+        String dmMessage  = event.getOption("message") != null ? event.getOption("message").getAsString() : "";
+
+        if (targetName.isEmpty() || dmMessage.isEmpty()) {
+            event.reply("❌ Please provide a player name and a message.").setEphemeral(true).queue();
+            return;
+        }
+
+        // Sanitise the message (strip any Minecraft colour codes from Discord input)
+        dmMessage = dmMessage.replaceAll("[§&][0-9a-fk-orA-FK-OR]", "").trim();
+        if (dmMessage.isEmpty()) {
+            event.reply("❌ Message cannot be empty.").setEphemeral(true).queue();
+            return;
+        }
+
+        final String finalTarget  = targetName;
+        final String finalMessage = dmMessage;
+        final String senderTag    = event.getUser().getAsTag();
+
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            Player target = Bukkit.getPlayerExact(finalTarget);
+            if (target == null) {
+                event.reply("❌ **" + finalTarget + "** is not online right now.").setEphemeral(true).queue();
+                return;
+            }
+
+            // Format in Minecraft: [Discord DM] SenderTag: message
+            String formatted = "§d[Discord DM] §7" + senderTag + "§8: §f" + finalMessage;
+            target.sendMessage(formatted);
+
+            // Confirm to the Discord user (ephemeral)
+            event.reply("✅ Message delivered to **" + target.getName() + "**.").setEphemeral(true).queue();
+
+            plugin.getPluginLogger().info("[Discord DM] " + senderTag + " → " + target.getName() + ": " + finalMessage);
+        });
     }
 
     private void handleExecute(SlashCommandInteractionEvent event) {

@@ -5,6 +5,7 @@ import com.cubetale.discordchat.config.MessagesConfig;
 import com.cubetale.discordchat.console.ConsoleManager;
 import com.cubetale.discordchat.database.DatabaseManager;
 import com.cubetale.discordchat.discord.DiscordBot;
+import com.cubetale.discordchat.discord.StatsAutoPost;
 import com.cubetale.discordchat.discord.WebhookManager;
 import com.cubetale.discordchat.linking.LinkManager;
 import com.cubetale.discordchat.minecraft.ChatHandler;
@@ -30,6 +31,7 @@ public class CubeTaleDiscordChat extends JavaPlugin {
     private ConsoleManager consoleManager;
     private PluginLogger pluginLogger;
     private SkinsRestorerHook skinsRestorerHook;
+    private StatsAutoPost statsAutoPost;
 
     @Override
     public void onEnable() {
@@ -103,6 +105,12 @@ public class CubeTaleDiscordChat extends JavaPlugin {
             pluginLogger.info("PlaceholderAPI hooked successfully.");
         }
 
+        // Stats auto-post
+        statsAutoPost = new StatsAutoPost(this);
+        if (discordBot.isConnected()) {
+            statsAutoPost.start();
+        }
+
         // Send server start notification
         if (discordBot.isConnected()) {
             discordBot.sendServerStartNotification();
@@ -118,6 +126,10 @@ public class CubeTaleDiscordChat extends JavaPlugin {
         // Send server stop notification before shutting down
         if (discordBot != null && discordBot.isConnected()) {
             discordBot.sendServerStopNotification();
+        }
+
+        if (statsAutoPost != null) {
+            statsAutoPost.stop();
         }
 
         if (consoleManager != null) {

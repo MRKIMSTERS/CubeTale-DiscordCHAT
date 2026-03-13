@@ -4,6 +4,7 @@ com/cubetale/discordchat/util/SkinsRestorerHook.class
 com/cubetale/discordchat/console/ConsoleManager.class
 com/cubetale/discordchat/console/ConsoleManager$ConsoleLogHandler.class
 com/cubetale/discordchat/sync/RoleSyncManager.class
+com/cubetale/discordchat/discord/StatsAutoPost.class
 com/cubetale/discordchat/discord/DiscordBot.class
 com/cubetale/discordchat/sync/GroupMapper.class
 com/cubetale/discordchat/minecraft/MinecraftListener.class

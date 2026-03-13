@@ -221,6 +221,24 @@ public class ConfigManager {
         return config.getInt("role-sync.sync-interval", 300);
     }
 
+    // Stats auto-post
+    public boolean isStatsAutoPostEnabled() {
+        return config.getBoolean("stats.enabled", false);
+    }
+
+    public String getStatsChannelId() {
+        return config.getString("stats.channel-id", "");
+    }
+
+    public int getStatsUpdateInterval() {
+        return config.getInt("stats.update-interval", 300);
+    }
+
+    // Discord → Minecraft DM
+    public boolean isDiscordDmEnabled() {
+        return config.getBoolean("discord-dm.enabled", true);
+    }
+
     // Debug
     public boolean isDebugEnabled() {
         return config.getBoolean("debug", false);

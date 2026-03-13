@@ -49,22 +49,38 @@ public class ChatHandler implements Listener {
 
         final String finalMessage = message;
 
-        // Detect [item] keyword (case-insensitive)
-        if (containsItemTrigger(message)) {
-            // We need the main thread to safely read inventory; schedule sync task
+        // ── [item] trigger ────────────────────────────────────────────────────
+        if (containsTrigger(message, "[item]")) {
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 ItemStack held = player.getInventory().getItemInMainHand();
                 if (held.getType() != Material.AIR) {
-                    // Clone so async thread gets a stable copy
-                    ItemStack itemCopy = held.clone();
-                    // Go async for rendering + sending
+                    ItemStack copy = held.clone();
                     plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-                        plugin.getWebhookManager().sendItemDisplayWebhook(player, itemCopy);
+                        plugin.getWebhookManager().sendItemDisplayWebhook(player, copy);
                         plugin.getPluginLogger().debug(
-                                "Item display sent for " + player.getName()
-                                + ": " + itemCopy.getType().getKey());
+                                "[item] sent for " + player.getName() + ": " + copy.getType().getKey());
                     });
                 }
+            });
+        }
+
+        // ── [inv] trigger ─────────────────────────────────────────────────────
+        if (containsTrigger(message, "[inv]")) {
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                // Build a full 41-slot array: 0-35 main+hotbar, 36-39 armor, 40 offhand
+                ItemStack[] full = new ItemStack[41];
+                ItemStack[] main = player.getInventory().getContents();
+                System.arraycopy(main, 0, full, 0, Math.min(main.length, 36));
+                ItemStack[] armor = player.getInventory().getArmorContents();
+                if (armor != null) {
+                    for (int i = 0; i < Math.min(armor.length, 4); i++) full[36 + i] = armor[i];
+                }
+                ItemStack[] extra = player.getInventory().getExtraContents();
+                if (extra != null && extra.length > 0) full[40] = extra[0];
+                plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                    plugin.getWebhookManager().sendInventoryWebhook(player, full);
+                    plugin.getPluginLogger().debug("[inv] sent for " + player.getName());
+                });
             });
         }
 
@@ -73,8 +89,7 @@ public class ChatHandler implements Listener {
         plugin.getPluginLogger().debug("Chat forwarded to Discord for " + player.getName());
     }
 
-    /** Returns true if the message contains [item] in any case. */
-    private static boolean containsItemTrigger(String message) {
-        return message.toLowerCase().contains("[item]");
+    private static boolean containsTrigger(String message, String trigger) {
+        return message.toLowerCase().contains(trigger);
     }
 }

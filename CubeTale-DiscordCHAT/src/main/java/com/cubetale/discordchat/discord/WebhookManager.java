@@ -148,6 +148,58 @@ public class WebhookManager {
         }
     }
 
+    // ── Inventory display ─────────────────────────────────────────────────────────
+
+    /**
+     * Renders the player's full inventory as a Minecraft-style grid image and sends
+     * it via webhook using the player's skin avatar as the identity.
+     * Called from an async context.
+     */
+    public void sendInventoryWebhook(Player player, ItemStack[] contents) {
+        if (!plugin.getDiscordBot().isConnected()) return;
+        String chatChannelId = plugin.getConfigManager().getChatChannelId();
+        if (chatChannelId == null || chatChannelId.isEmpty()) return;
+
+        String avatarUrl = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
+        String username  = buildWebhookUsername(player);
+
+        try {
+            byte[] imageBytes = MinecraftImageRenderer.renderInventory(contents, player.getName());
+            if (imageBytes == null) return;
+
+            WebhookEmbedBuilder embed = new WebhookEmbedBuilder()
+                    .setTitle(new WebhookEmbed.EmbedTitle(username + "'s Inventory", null))
+                    .setColor(0x2f3136)
+                    .setImageUrl("attachment://inventory.png");
+
+            if (webhookClient != null) {
+                WebhookMessageBuilder msg = new WebhookMessageBuilder()
+                        .setUsername(username)
+                        .setAvatarUrl(avatarUrl)
+                        .addEmbeds(embed.build())
+                        .addFile("inventory.png", imageBytes);
+                webhookClient.send(msg.build());
+            } else {
+                net.dv8tion.jda.api.entities.channel.concrete.TextChannel channel =
+                        plugin.getDiscordBot().getJda().getTextChannelById(chatChannelId);
+                if (channel == null) return;
+
+                net.dv8tion.jda.api.EmbedBuilder jdaEmbed = new net.dv8tion.jda.api.EmbedBuilder()
+                        .setTitle(username + "'s Inventory")
+                        .setColor(0x2f3136)
+                        .setImage("attachment://inventory.png");
+
+                channel.sendFiles(net.dv8tion.jda.api.utils.FileUpload.fromData(imageBytes, "inventory.png"))
+                       .addEmbeds(jdaEmbed.build())
+                       .queue();
+            }
+
+            plugin.getPluginLogger().debug("Inventory display sent for " + player.getName());
+        } catch (Exception e) {
+            plugin.getPluginLogger().warning("Failed to send inventory display: " + e.getMessage());
+        }
+    }
+
     // ── Advancement (webhook embed with player avatar + icon thumbnail) ───────────
 
     /**

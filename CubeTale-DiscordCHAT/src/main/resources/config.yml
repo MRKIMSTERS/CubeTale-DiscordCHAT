@@ -157,5 +157,21 @@ placeholderapi:
   username-format: ""
   # Example: "%luckperms_prefix%%player_name%"
 
+# ── Auto-updating server stats channel ─────────────────────────────────────────
+# Creates (or edits) a single embed in the configured channel that refreshes
+# automatically, showing live player count, TPS, RAM, uptime, and more.
+stats:
+  enabled: false
+  # Discord channel ID where the stats embed will be posted/edited
+  channel-id: "STATS_CHANNEL_ID"
+  # How often to refresh (in seconds). Minimum is 30.
+  update-interval: 300
+
+# ── Discord → Minecraft private messages (/dm command) ─────────────────────────
+# Allows Discord users to send a private message to an online Minecraft player.
+# The message appears in-game as: [Discord DM] DiscordUser#0000: <message>
+discord-dm:
+  enabled: true
+
 # Debug mode (verbose logging)
 debug: false

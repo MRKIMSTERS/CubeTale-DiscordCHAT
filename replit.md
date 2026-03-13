@@ -29,8 +29,12 @@ Located in `CubeTale-DiscordCHAT/`. Built with Maven.
 - Console channel (live feed + execute commands from Discord)
 - Event notifications (join/leave, death, advancements, server start/stop)
 - **`[item]` in chat** — player types `[item]` and the plugin renders their held item as a Minecraft-style tooltip image sent to Discord via webhook (with player avatar)
+- **`[inv]` in chat** — player types `[inv]` and the plugin renders their full inventory (armor, offhand, main grid, hotbar) as a Minecraft-style image with real item textures fetched from mc.nerothe.com
 - **Advancement notifications via webhook** — player avatar + advancement icon as thumbnail on the right side
 - **`/players` image** — Discord slash command renders an online player list as a Minecraft-style image with LuckPerms rank prefix (coloured) + ping signal bars
+- **`/profile <player>`** — Discord slash command that renders a profile card image with player head (from mc-heads.net), rank, online/offline status, deaths, kills, mob kills, and time played
+- **`/dm <player> <message>`** — Discord users can send a private message directly to an online Minecraft player, shown in-game as `[Discord DM] User#0000: message`
+- **Auto-updating server status channel** — configure a Discord channel and the plugin posts/edits a live stats embed (player count, TPS, RAM, uptime, online player list) every N minutes (configured via `stats.channel-id` and `stats.update-interval`)
 - Discord slash commands (`/players`, `/status`, `/execute`, `/link`)
 - PlaceholderAPI expansion
 - SQLite/MySQL storage with HikariCP
