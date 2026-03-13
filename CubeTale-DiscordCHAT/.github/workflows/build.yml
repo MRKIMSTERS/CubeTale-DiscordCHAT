@@ -1,4 +1,4 @@
-name: Build
+name: Build & Release
 
 on:
   push:
@@ -9,7 +9,9 @@ on:
     types: [ created ]
 
 jobs:
+  # ── Build job: runs on every push and pull request ───────────────────────────
   build:
+    name: Build JAR
     runs-on: ubuntu-latest
 
     steps:
@@ -23,18 +25,22 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Remove any stale JARs first to avoid Maven shade plugin conflicts
       - name: Build with Maven
         working-directory: CubeTale-DiscordCHAT
-        run: mvn clean package -B --no-transfer-progress
+        run: rm -f target/*.jar && mvn package -B --no-transfer-progress
 
-      - name: Upload artifact
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: CubeTale-DiscordCHAT-${{ github.sha }}
           path: CubeTale-DiscordCHAT/target/CubeTale-DiscordCHAT-*.jar
           if-no-files-found: error
+          retention-days: 30
 
+  # ── Release job: runs when a GitHub Release is published ────────────────────
   release:
+    name: Attach JAR to Release
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
@@ -50,13 +56,50 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Strip leading 'v' from tag (e.g. v1.2.0 → 1.2.0)
+      - name: Extract version from release tag
+        run: |
+          RAW_TAG="${{ github.ref_name }}"
+          VERSION="${RAW_TAG#v}"
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Releasing version: $VERSION"
+
+      # Stamp pom.xml so the shaded JAR carries the right version number
+      - name: Set pom.xml version to release tag
+        working-directory: CubeTale-DiscordCHAT
+        run: |
+          mvn versions:set \
+            -DnewVersion=${{ env.RELEASE_VERSION }} \
+            -DgenerateBackupPoms=false \
+            -B --no-transfer-progress
+
       - name: Build release JAR
         working-directory: CubeTale-DiscordCHAT
-        run: mvn clean package -B --no-transfer-progress
+        run: rm -f target/*.jar && mvn package -B --no-transfer-progress
 
-      - name: Upload release asset
+      - name: Upload release JAR to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: CubeTale-DiscordCHAT/target/CubeTale-DiscordCHAT-*.jar
+          body: |
+            ## CubeTale-DiscordCHAT ${{ env.RELEASE_VERSION }}
+
+            > **Author:** MRKIMSTERS
+            > **Developer:** CubeTale Developments (MrKiro_)
+
+            ### Installation
+            1. Download `CubeTale-DiscordCHAT-${{ env.RELEASE_VERSION }}.jar`
+            2. Drop it into your server's `plugins/` folder
+            3. Restart the server
+            4. Edit `plugins/CubeTale-DiscordCHAT/config.yml` with your Discord bot token, webhook URL, and channel IDs
+
+            ### Requirements
+            - Paper / Spigot **1.21+**
+            - Java **17+**
+            - A Discord bot with **Message Content Intent** enabled
+
+            ### Optional soft-dependencies
+            `LuckPerms`, `PlaceholderAPI`, `SkinsRestorer`
+          append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

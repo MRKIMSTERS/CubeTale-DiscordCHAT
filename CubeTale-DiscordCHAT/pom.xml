@@ -11,7 +11,28 @@
 
     <name>CubeTale-DiscordCHAT</name>
     <description>A modern Minecraft-Discord integration plugin with webhook avatar support</description>
-    <url>https://github.com/CubeTale/CubeTale-DiscordCHAT</url>
+    <url>https://github.com/MRKIMSTERS/CubeTale-DiscordCHAT</url>
+
+    <developers>
+        <developer>
+            <id>MRKIMSTERS</id>
+            <name>MRKIMSTERS</name>
+            <organization>CubeTale Developments</organization>
+            <organizationUrl>https://github.com/MRKIMSTERS</organizationUrl>
+            <roles>
+                <role>author</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>MrKiro_</id>
+            <name>MrKiro_</name>
+            <organization>CubeTale Developments</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
 
     <properties>
         <java.version>17</java.version>

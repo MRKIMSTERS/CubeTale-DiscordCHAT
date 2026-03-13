@@ -2,9 +2,9 @@ name: CubeTale-DiscordCHAT
 version: '1.0.0'
 main: com.cubetale.discordchat.CubeTaleDiscordChat
 api-version: '1.21'
-author: CubeTale
+authors: [MRKIMSTERS, "CubeTale Developments (MrKiro_)"]
 description: A modern Minecraft-Discord integration with webhook avatar support
-website: https://github.com/CubeTale/CubeTale-DiscordCHAT
+website: https://github.com/MRKIMSTERS/CubeTale-DiscordCHAT
 
 softdepend: [LuckPerms, PlaceholderAPI, SkinsRestorer]
 
