@@ -239,6 +239,33 @@ public class ConfigManager {
         return config.getBoolean("discord-dm.enabled", true);
     }
 
+    // First-join / PvP-kill events
+    public boolean isFirstJoinEnabled() {
+        return config.getBoolean("events.first-join.enabled", true);
+    }
+
+    public String getFirstJoinColor() {
+        return config.getString("events.first-join.embed-color", "#AAFFAA");
+    }
+
+    public boolean isPvpKillEnabled() {
+        return config.getBoolean("events.pvp-kill.enabled", true);
+    }
+
+    public String getPvpKillColor() {
+        return config.getString("events.pvp-kill.embed-color", "#FF4444");
+    }
+
+    // Discord @mention notify
+    public boolean isMentionNotifyEnabled() {
+        return config.getBoolean("mention-notify.enabled", true);
+    }
+
+    // Discord reply quoting
+    public boolean isReplyQuotingEnabled() {
+        return config.getBoolean("reply-quoting.enabled", true);
+    }
+
     // Debug
     public boolean isDebugEnabled() {
         return config.getBoolean("debug", false);

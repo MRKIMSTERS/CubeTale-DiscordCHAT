@@ -275,6 +275,42 @@ public class DiscordBot {
         sendEmbed(chatChannelId, embed.build());
     }
 
+    public void sendFirstJoinNotification(String playerName, String playerUUID, String avatarUrl) {
+        if (!plugin.getConfigManager().isFirstJoinEnabled()) return;
+        String chatChannelId = plugin.getConfigManager().getChatChannelId();
+        if (chatChannelId == null || chatChannelId.isEmpty()) return;
+
+        EmbedBuilder embed = new EmbedBuilder()
+                .setTitle("🌟 First Join!")
+                .setDescription("**" + playerName + "** has joined for the first time!\nWelcome to the server!")
+                .setColor(ColorConverter.hexToInt(plugin.getConfigManager().getFirstJoinColor()))
+                .setThumbnail(avatarUrl)
+                .setTimestamp(Instant.now());
+
+        sendEmbed(chatChannelId, embed.build());
+    }
+
+    public void sendPvpKillNotification(String killerName, String killerUUID, String killerAvatarUrl,
+                                        String victimName, String weaponName) {
+        if (!plugin.getConfigManager().isPvpKillEnabled()) return;
+        String chatChannelId = plugin.getConfigManager().getChatChannelId();
+        if (chatChannelId == null || chatChannelId.isEmpty()) return;
+
+        String desc = "**" + killerName + "** killed **" + victimName + "**";
+        if (weaponName != null && !weaponName.isEmpty()) {
+            desc += " with **" + weaponName + "**";
+        }
+
+        EmbedBuilder embed = new EmbedBuilder()
+                .setTitle("⚔ PvP Kill")
+                .setDescription(desc)
+                .setColor(ColorConverter.hexToInt(plugin.getConfigManager().getPvpKillColor()))
+                .setThumbnail(killerAvatarUrl)
+                .setTimestamp(Instant.now());
+
+        sendEmbed(chatChannelId, embed.build());
+    }
+
     // --- Getters ---
 
     public boolean isConnected() {

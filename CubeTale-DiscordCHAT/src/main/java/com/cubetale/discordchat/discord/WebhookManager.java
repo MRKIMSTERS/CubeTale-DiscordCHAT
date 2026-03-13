@@ -252,6 +252,167 @@ public class WebhookManager {
         }
     }
 
+    // ── Armor display ─────────────────────────────────────────────────────────────
+
+    /**
+     * Renders a player's equipped armor (helmet/chestplate/leggings/boots) plus offhand
+     * as a vertical tooltip strip and sends it via webhook.
+     */
+    public void sendArmorWebhook(Player player, ItemStack[] armorSlots, ItemStack offhand) {
+        if (!plugin.getDiscordBot().isConnected()) return;
+        String chatChannelId = plugin.getConfigManager().getChatChannelId();
+        if (chatChannelId == null || chatChannelId.isEmpty()) return;
+
+        String avatarUrl = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
+        String username  = buildWebhookUsername(player);
+
+        try {
+            byte[] imageBytes = MinecraftImageRenderer.renderArmor(armorSlots, offhand, player.getName());
+            if (imageBytes == null) return;
+
+            WebhookEmbedBuilder embed = new WebhookEmbedBuilder()
+                    .setTitle(new WebhookEmbed.EmbedTitle(username + "'s Armor", null))
+                    .setColor(0x4444AA)
+                    .setImageUrl("attachment://armor.png");
+
+            if (webhookClient != null) {
+                WebhookMessageBuilder msg = new WebhookMessageBuilder()
+                        .setUsername(username)
+                        .setAvatarUrl(avatarUrl)
+                        .addEmbeds(embed.build())
+                        .addFile("armor.png", imageBytes);
+                webhookClient.send(msg.build());
+            } else {
+                net.dv8tion.jda.api.entities.channel.concrete.TextChannel channel =
+                        plugin.getDiscordBot().getJda().getTextChannelById(chatChannelId);
+                if (channel == null) return;
+                net.dv8tion.jda.api.EmbedBuilder jdaEmbed = new net.dv8tion.jda.api.EmbedBuilder()
+                        .setTitle(username + "'s Armor")
+                        .setColor(0x4444AA)
+                        .setImage("attachment://armor.png");
+                channel.sendFiles(net.dv8tion.jda.api.utils.FileUpload.fromData(imageBytes, "armor.png"))
+                       .addEmbeds(jdaEmbed.build()).queue();
+            }
+            plugin.getPluginLogger().debug("Armor display sent for " + player.getName());
+        } catch (Exception e) {
+            plugin.getPluginLogger().warning("Failed to send armor display: " + e.getMessage());
+        }
+    }
+
+    // ── Map display ────────────────────────────────────────────────────────────────
+
+    /**
+     * Shows the map item the player is holding as a Discord embed with name + map ID.
+     */
+    public void sendMapWebhook(Player player, ItemStack mapItem) {
+        if (!plugin.getDiscordBot().isConnected()) return;
+        String chatChannelId = plugin.getConfigManager().getChatChannelId();
+        if (chatChannelId == null || chatChannelId.isEmpty()) return;
+
+        String avatarUrl = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
+        String username  = buildWebhookUsername(player);
+
+        String mapName = "Map";
+        String mapId   = "";
+        try {
+            org.bukkit.inventory.meta.MapMeta meta =
+                    (org.bukkit.inventory.meta.MapMeta) mapItem.getItemMeta();
+            if (meta != null) {
+                if (meta.hasDisplayName()) mapName = MinecraftImageRenderer.strip(meta.getDisplayName());
+                if (meta.hasMapId()) mapId = " (ID: " + meta.getMapId() + ")";
+            }
+        } catch (Exception ignored) {}
+
+        String description = "**" + username + "** is holding a map: **" + mapName + "**" + mapId;
+
+        net.dv8tion.jda.api.EmbedBuilder embed = new net.dv8tion.jda.api.EmbedBuilder()
+                .setTitle("🗺 " + mapName + mapId)
+                .setDescription(description)
+                .setColor(0x8B5E3C)
+                .setThumbnail("https://mc.nerothe.com/img/1.21/filled_map.png");
+
+        if (webhookClient != null) {
+            WebhookEmbedBuilder wb = new WebhookEmbedBuilder()
+                    .setTitle(new WebhookEmbed.EmbedTitle("🗺 " + mapName + mapId, null))
+                    .setDescription(description)
+                    .setColor(0x8B5E3C);
+            WebhookMessageBuilder msg = new WebhookMessageBuilder()
+                    .setUsername(username)
+                    .setAvatarUrl(avatarUrl)
+                    .addEmbeds(wb.build());
+            webhookClient.send(msg.build());
+        } else {
+            net.dv8tion.jda.api.entities.channel.concrete.TextChannel channel =
+                    plugin.getDiscordBot().getJda().getTextChannelById(chatChannelId);
+            if (channel != null) channel.sendMessageEmbeds(embed.build()).queue();
+        }
+        plugin.getPluginLogger().debug("Map display sent for " + player.getName());
+    }
+
+    // ── Book display ───────────────────────────────────────────────────────────────
+
+    /**
+     * Shows the first few pages of a written/writable book as a Discord embed.
+     */
+    public void sendBookWebhook(Player player, ItemStack bookItem) {
+        if (!plugin.getDiscordBot().isConnected()) return;
+        String chatChannelId = plugin.getConfigManager().getChatChannelId();
+        if (chatChannelId == null || chatChannelId.isEmpty()) return;
+
+        String avatarUrl = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
+        String username  = buildWebhookUsername(player);
+
+        String title  = "Book";
+        String author = "";
+        StringBuilder pages = new StringBuilder();
+        int pageCount = 0;
+
+        try {
+            if (bookItem.getItemMeta() instanceof org.bukkit.inventory.meta.BookMeta) {
+                org.bukkit.inventory.meta.BookMeta meta =
+                        (org.bukkit.inventory.meta.BookMeta) bookItem.getItemMeta();
+                if (meta.hasTitle()) title  = MinecraftImageRenderer.strip(meta.getTitle());
+                if (meta.hasAuthor()) author = meta.getAuthor();
+                pageCount = meta.getPageCount();
+                int limit = Math.min(pageCount, 3);
+                for (int i = 1; i <= limit; i++) {
+                    String pageText = MinecraftImageRenderer.strip(meta.getPage(i));
+                    if (pageText.length() > 300) pageText = pageText.substring(0, 300) + "…";
+                    pages.append("**Page ").append(i).append("**\n").append(pageText).append("\n\n");
+                }
+                if (pageCount > 3) pages.append("*…and ").append(pageCount - 3).append(" more page(s)*");
+            }
+        } catch (Exception e) {
+            plugin.getPluginLogger().debug("Could not read book content: " + e.getMessage());
+        }
+
+        if (pages.length() == 0) pages.append("*(empty)*");
+
+        String embedTitle = "📖 " + title + (author.isEmpty() ? "" : " by " + author);
+        String body       = pages.toString();
+
+        if (webhookClient != null) {
+            WebhookEmbedBuilder wb = new WebhookEmbedBuilder()
+                    .setTitle(new WebhookEmbed.EmbedTitle(embedTitle, null))
+                    .setDescription(body)
+                    .setColor(0xD4A96A);
+            WebhookMessageBuilder msg = new WebhookMessageBuilder()
+                    .setUsername(username)
+                    .setAvatarUrl(avatarUrl)
+                    .addEmbeds(wb.build());
+            webhookClient.send(msg.build());
+        } else {
+            net.dv8tion.jda.api.entities.channel.concrete.TextChannel channel =
+                    plugin.getDiscordBot().getJda().getTextChannelById(chatChannelId);
+            if (channel != null) {
+                net.dv8tion.jda.api.EmbedBuilder embed = new net.dv8tion.jda.api.EmbedBuilder()
+                        .setTitle(embedTitle).setDescription(body).setColor(0xD4A96A);
+                channel.sendMessageEmbeds(embed.build()).queue();
+            }
+        }
+        plugin.getPluginLogger().debug("Book display sent for " + player.getName());
+    }
+
     // ── Advancement (webhook embed with player avatar + icon thumbnail) ───────────
 
     /**

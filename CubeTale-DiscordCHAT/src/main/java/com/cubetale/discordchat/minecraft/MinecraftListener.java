@@ -4,6 +4,7 @@ import com.cubetale.discordchat.CubeTaleDiscordChat;
 import com.cubetale.discordchat.util.MessageFormatter;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementDisplay;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,6 +14,7 @@ import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.lang.reflect.Method;
 
@@ -31,11 +33,16 @@ public class MinecraftListener implements Listener {
         Player player      = event.getPlayer();
         String playerName  = player.getName();
         String playerUUID  = player.getUniqueId().toString();
+        boolean firstJoin  = !player.hasPlayedBefore();
         String avatarUrl   = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            plugin.getDiscordBot().sendPlayerJoinNotification(playerName, playerUUID, avatarUrl);
-            plugin.getPluginLogger().debug("Join notification sent for " + playerName);
+            if (firstJoin) {
+                plugin.getDiscordBot().sendFirstJoinNotification(playerName, playerUUID, avatarUrl);
+            } else {
+                plugin.getDiscordBot().sendPlayerJoinNotification(playerName, playerUUID, avatarUrl);
+            }
+            plugin.getPluginLogger().debug((firstJoin ? "First-join" : "Join") + " notification sent for " + playerName);
         });
     }
 
@@ -57,21 +64,54 @@ public class MinecraftListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerDeath(PlayerDeathEvent event) {
         if (!plugin.getDiscordBot().isConnected()) return;
-        if (!plugin.getConfigManager().isDeathEnabled()) return;
 
-        Player player      = event.getEntity();
-        String playerName  = player.getName();
-        String playerUUID  = player.getUniqueId().toString();
-        String avatarUrl   = plugin.getSkinsRestorerHook().resolveAvatarUrl(player, 128);
+        Player victim     = event.getEntity();
+        String victimName = victim.getName();
+        String victimUUID = victim.getUniqueId().toString();
+        String victimAvatar = plugin.getSkinsRestorerHook().resolveAvatarUrl(victim, 128);
+
+        // Check for PvP kill
+        Entity killerEntity = victim.getKiller();
+        if (killerEntity instanceof Player) {
+            Player killer = (Player) killerEntity;
+            if (plugin.getConfigManager().isPvpKillEnabled()) {
+                String killerName   = killer.getName();
+                String killerUUID   = killer.getUniqueId().toString();
+                String killerAvatar = plugin.getSkinsRestorerHook().resolveAvatarUrl(killer, 128);
+                ItemStack weapon    = killer.getInventory().getItemInMainHand();
+                String weaponName   = resolveItemName(weapon);
+
+                plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                    plugin.getDiscordBot().sendPvpKillNotification(
+                            killerName, killerUUID, killerAvatar, victimName, weaponName);
+                    plugin.getPluginLogger().debug("PvP kill notification: " + killerName + " -> " + victimName);
+                });
+            }
+        }
+
+        // Regular death notification
+        if (!plugin.getConfigManager().isDeathEnabled()) return;
 
         String deathMessage = event.getDeathMessage() != null
                 ? MessageFormatter.stripColors(event.getDeathMessage())
-                : playerName + " died.";
+                : victimName + " died.";
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            plugin.getDiscordBot().sendPlayerDeathNotification(playerName, playerUUID, deathMessage, avatarUrl);
-            plugin.getPluginLogger().debug("Death notification sent for " + playerName);
+            plugin.getDiscordBot().sendPlayerDeathNotification(victimName, victimUUID, deathMessage, victimAvatar);
+            plugin.getPluginLogger().debug("Death notification sent for " + victimName);
         });
+    }
+
+    private String resolveItemName(ItemStack item) {
+        if (item == null || item.getType().isAir()) return "";
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null && meta.hasDisplayName()) return MessageFormatter.stripColors(meta.getDisplayName());
+        String key = item.getType().getKey().getKey().replace('_', ' ');
+        StringBuilder sb = new StringBuilder();
+        for (String w : key.split(" ")) {
+            if (!w.isEmpty()) sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1)).append(' ');
+        }
+        return sb.toString().trim();
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

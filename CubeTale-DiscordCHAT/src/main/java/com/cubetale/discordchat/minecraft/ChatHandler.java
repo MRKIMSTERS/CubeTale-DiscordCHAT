@@ -100,6 +100,60 @@ public class ChatHandler implements Listener {
             });
         }
 
+        // ── [armor] ───────────────────────────────────────────────────────────
+        if (InteractiveChatHook.hasTrigger(rawMessage, InteractiveChatHook.TRIGGER_ARMOR)) {
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                // 4 armor slots + offhand (5 items total)
+                ItemStack[] armorSlots = player.getInventory().getArmorContents().clone();
+                ItemStack   offhand    = player.getInventory().getItemInOffHand().clone();
+                plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                    plugin.getWebhookManager().sendArmorWebhook(player, armorSlots, offhand);
+                    plugin.getPluginLogger().debug("[armor] sent for " + player.getName());
+                });
+            });
+        }
+
+        // ── [offhand] ─────────────────────────────────────────────────────────
+        if (InteractiveChatHook.hasTrigger(rawMessage, InteractiveChatHook.TRIGGER_OFFHAND)) {
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                ItemStack offhand = player.getInventory().getItemInOffHand().clone();
+                if (offhand.getType() != Material.AIR) {
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                        plugin.getWebhookManager().sendItemDisplayWebhook(player, offhand);
+                        plugin.getPluginLogger().debug("[offhand] sent for " + player.getName());
+                    });
+                }
+            });
+        }
+
+        // ── [map] ─────────────────────────────────────────────────────────────
+        if (InteractiveChatHook.hasTrigger(rawMessage, InteractiveChatHook.TRIGGER_MAP)) {
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                ItemStack held = player.getInventory().getItemInMainHand();
+                if (held.getType() == Material.FILLED_MAP || held.getType() == Material.MAP) {
+                    ItemStack mapItem = held.clone();
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                        plugin.getWebhookManager().sendMapWebhook(player, mapItem);
+                        plugin.getPluginLogger().debug("[map] sent for " + player.getName());
+                    });
+                }
+            });
+        }
+
+        // ── [book] ────────────────────────────────────────────────────────────
+        if (InteractiveChatHook.hasTrigger(rawMessage, InteractiveChatHook.TRIGGER_BOOK)) {
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                ItemStack held = player.getInventory().getItemInMainHand();
+                if (held.getType() == Material.WRITTEN_BOOK || held.getType() == Material.WRITABLE_BOOK) {
+                    ItemStack bookItem = held.clone();
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                        plugin.getWebhookManager().sendBookWebhook(player, bookItem);
+                        plugin.getPluginLogger().debug("[book] sent for " + player.getName());
+                    });
+                }
+            });
+        }
+
         // ── Forward to Discord — strip all IC trigger tokens first ─────────────
         // Removing [item] / [inv] / [enderchest] and any custom IC placeholders
         // keeps the Discord message clean. If the whole message was just a trigger

@@ -32,6 +32,10 @@ public class InteractiveChatHook {
     public static final String TRIGGER_INV        = "[inv]";
     public static final String TRIGGER_ENDERCHEST = "[enderchest]";
     public static final String TRIGGER_EC_SHORT   = "[ec]";
+    public static final String TRIGGER_ARMOR      = "[armor]";
+    public static final String TRIGGER_OFFHAND    = "[offhand]";
+    public static final String TRIGGER_MAP        = "[map]";
+    public static final String TRIGGER_BOOK       = "[book]";
 
     private final Logger log;
     private final boolean available;
@@ -159,6 +163,10 @@ public class InteractiveChatHook {
         message = message.replaceAll("(?i)\\[inventory\\]",  "");
         message = message.replaceAll("(?i)\\[enderchest\\]", "");
         message = message.replaceAll("(?i)\\[ec\\]",         "");
+        message = message.replaceAll("(?i)\\[armor\\]",      "");
+        message = message.replaceAll("(?i)\\[offhand\\]",    "");
+        message = message.replaceAll("(?i)\\[map\\]",        "");
+        message = message.replaceAll("(?i)\\[book\\]",       "");
 
         // IC-registered custom patterns
         for (Pattern p : icPatterns) {

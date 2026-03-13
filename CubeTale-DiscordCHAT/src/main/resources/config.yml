@@ -17,8 +17,8 @@ discord:
   webhook:
     enabled: true
     url: "YOUR_WEBHOOK_URL_HERE"
-    # Avatar service: mcheads (recommended), crafatar, cravatar, minotar
-    # Example URL : https://mc-heads.net/avatar/e66479cd-6b57-4ffb-9551-d41c2a883a55/128
+    # Avatar service: mcheads (default), cravatar, minotar
+    # mc-heads.net URL format: https://mc-heads.net/avatar/{uuid}/{size}
     avatar-service: "mcheads"
     avatar-size: 128
     show-overlay: true
@@ -142,6 +142,14 @@ events:
     use-embed: true
     embed-color: "#FFD700"
 
+  first-join:
+    enabled: true
+    embed-color: "#AAFFAA"
+
+  pvp-kill:
+    enabled: true
+    embed-color: "#FF4444"
+
   server-start:
     enabled: true
     embed-color: "#00FFFF"
@@ -171,6 +179,17 @@ stats:
 # Allows Discord users to send a private message to an online Minecraft player.
 # The message appears in-game as: [Discord DM] DiscordUser#0000: <message>
 discord-dm:
+  enabled: true
+
+# Discord @mentions -> in-game notification
+# When a Discord message mentions a linked player's Discord account,
+# that player receives an in-game title and sound notification.
+mention-notify:
+  enabled: true
+
+# Discord reply quoting
+# When a Discord message is a reply, show the quoted message in Minecraft chat.
+reply-quoting:
   enabled: true
 
 # Debug mode (verbose logging)
