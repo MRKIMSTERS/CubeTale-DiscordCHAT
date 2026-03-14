@@ -1,152 +1,101 @@
-# Workspace
+# CubeTale Minecraft Plugin Workspace
 
 ## Overview
 
-This repo contains two independent projects:
+Two Maven/Java Minecraft plugins (Spigot/Paper 1.21+) that together bridge
+in-game chat with Discord — no DiscordSRV required.
 
-1. **CubeTale-DiscordCHAT** — A Minecraft Spigot/Paper 1.21+ plugin (Java/Maven) that integrates Minecraft servers with Discord.
-2. **TypeScript pnpm monorepo** — An Express 5 API server with shared libraries.
+| Plugin | Directory | Output JAR |
+|--------|-----------|------------|
+| CubeTale-DiscordCHAT | `CubeTale-DiscordCHAT/` | `target/CubeTale-DiscordCHAT-1.0.0.jar` (fat JAR ~34 MB) |
+| CubeTale-InteractiveChat-Addon | `CubeTale-InteractiveChat-Addon/` | `target/CubeTale-InteractiveChat-Addon-1.0.0.jar` (~18 KB) |
+
+**Build both plugins** (Run button / "Start application" workflow):
+```
+cd CubeTale-DiscordCHAT && mvn package -B -q
+cd CubeTale-InteractiveChat-Addon && mvn package -B -q
+```
 
 ---
 
-## CubeTale-DiscordCHAT (Java Plugin)
+## Build Environment
 
-Located in `CubeTale-DiscordCHAT/`. Built with Maven.
+- **Java**: GraalVM CE 22.3 (Java 19) — targets Java 17 bytecode
+- **Maven**: 3.8.6
+- **Spigot API**: 1.21-R0.1-SNAPSHOT (Java 17 class files — `compile` scope to pull transitive deps)
+- **Paper API**: NOT used at compile time — its 1.21 snapshot was compiled with Java 21 (class version 65) which is incompatible here. The server provides Paper at runtime; we compile against Spigot API only.
 
-- **Java**: 17+
-- **Build**: `cd CubeTale-DiscordCHAT && mvn clean package`
-- **Output**: `CubeTale-DiscordCHAT/target/CubeTale-DiscordCHAT-1.0.0.jar`
-- **API**: Spigot 1.21 + Paper 1.21 (both provided)
-- **Discord**: JDA 5 + discord-webhooks 0.8.4
-- **Database**: HikariCP + SQLite (default) or MySQL
-- **CI**: `.github/workflows/build.yml`
+---
+
+## CubeTale-DiscordCHAT
+
+Main plugin. Provides the Discord bridge, webhook infrastructure, and image rendering utilities that the addon consumes via reflection.
 
 ### Features
-- Bidirectional chat sync (Minecraft ↔ Discord)
-- Player skin head avatars via Discord Webhooks
+- Bidirectional chat sync (Minecraft ↔ Discord via webhooks with player-skin avatars)
 - Account linking (`/link`, `/unlink`, `/linked`)
 - Role sync via LuckPerms
 - Console channel (live feed + execute commands from Discord)
 - Event notifications (join/leave, death, advancements, server start/stop)
-- **`[item]` in chat** — player types `[item]` and the plugin renders their held item as a Minecraft-style tooltip image sent to Discord via webhook (with player avatar)
-- **`[inv]` in chat** — player types `[inv]` and the plugin renders their full inventory (armor, offhand, main grid, hotbar) as a Minecraft-style image with real item textures fetched from mc.nerothe.com
-- **Advancement notifications via webhook** — player avatar + advancement icon as thumbnail on the right side
-- **`/players` image** — Discord slash command renders an online player list as a Minecraft-style image with LuckPerms rank prefix (coloured) + ping signal bars
-- **`/profile <player>`** — Discord slash command that renders a profile card image with player head (from mc-heads.net), rank, online/offline status, deaths, kills, mob kills, and time played
-- **`/dm <player> <message>`** — Discord users can send a private message directly to an online Minecraft player, shown in-game as `[Discord DM] User#0000: message`
-- **Auto-updating server status channel** — configure a Discord channel and the plugin posts/edits a live stats embed (player count, TPS, RAM, uptime, online player list) every N minutes (configured via `stats.channel-id` and `stats.update-interval`)
-- Discord slash commands (`/players`, `/status`, `/execute`, `/link`)
+- `[item]` / `[inv]` rendering — sends Minecraft-style tooltip images to Discord
+- Auto-updating server status channel embed (player count, TPS, RAM, uptime)
+- Discord slash commands: `/players`, `/status`, `/execute`, `/link`, `/dm`, `/profile`
 - PlaceholderAPI expansion
-- SQLite/MySQL storage with HikariCP
+- SQLite/MySQL storage via HikariCP
+
+### Key dependencies
+- JDA 5 (shaded, relocated to `com.cubetale.discordchat.libs.jda`)
+- discord-webhooks 0.8.4
+- HikariCP 5 + SQLite JDBC
+- Spigot API 1.21 + Paper API 1.21 (both `provided`)
 
 ### Package structure
 ```
 com.cubetale.discordchat/
-├── CubeTaleDiscordChat.java      # Main plugin class
-├── config/                       # ConfigManager, MessagesConfig
-├── discord/                      # DiscordBot (JDA), DiscordListener, SlashCommandManager, WebhookManager
-├── minecraft/                    # MinecraftListener, ChatHandler, CommandManager
-├── linking/                      # LinkManager, LinkCommand, VerificationManager
-├── sync/                         # RoleSyncManager, GroupMapper
-├── console/                      # ConsoleManager
-├── database/                     # DatabaseManager (SQLite + MySQL via HikariCP)
-├── placeholders/                 # DiscordPlaceholderExpansion (PAPI)
-└── util/                         # AvatarUrlBuilder, ColorConverter, MessageFormatter, PluginLogger
+├── CubeTaleDiscordChat.java
+├── config/          # ConfigManager, MessagesConfig
+├── discord/         # DiscordBot, DiscordListener, SlashCommandManager, WebhookManager
+├── minecraft/       # MinecraftListener, ChatHandler, CommandManager
+├── linking/         # LinkManager, LinkCommand, VerificationManager
+├── sync/            # RoleSyncManager, GroupMapper
+├── console/         # ConsoleManager
+├── database/        # DatabaseManager (SQLite + MySQL)
+├── placeholders/    # DiscordPlaceholderExpansion (PAPI)
+└── util/            # AvatarUrlBuilder, ColorConverter, MessageFormatter,
+                     # MinecraftImageRenderer (renderItem, renderInventory,
+                     #   renderEnderChest, renderArmor, renderMap, renderBook)
 ```
 
 ---
 
-## TypeScript Monorepo
+## CubeTale-InteractiveChat-Addon
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+Addon plugin. Hooks into InteractiveChat (LOOHP) events to intercept
+`[item]`, `[inv]`, `[enderchest]`, `[armor]`, `[offhand]`, `[map]`, `[book]`
+triggers and forwards rendered images to Discord via CubeTale-DiscordCHAT's
+webhook system — all via reflection (no compile-time dependency on either
+CubeTale-DiscordCHAT or InteractiveChat).
 
-## Stack
+### Design
+- `plugin.yml` declares `depend: [InteractiveChat, CubeTale-DiscordCHAT]`
+- `ICEventListener` hooks IC's `PrePacketComponentProcessEvent` via reflection
+- `ChatListener` is a Bukkit-level `AsyncPlayerChatEvent` fallback
+- `TriggerProcessor` de-duplicates triggers per-player over a 10-tick window
+- `DiscordCHATBridge` locates CubeTale-DiscordCHAT's classes and calls
+  `WebhookManager` / `MinecraftImageRenderer` via reflection at runtime
 
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
-
-## Structure
-
-```text
-artifacts-monorepo/
-├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
-├── lib/                    # Shared libraries
-│   ├── api-spec/           # OpenAPI spec + Orval codegen config
-│   ├── api-client-react/   # Generated React Query hooks
-│   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
-├── tsconfig.json           # Root TS project references
-└── package.json            # Root package with hoisted devDeps
+### Package structure
+```
+com.cubetale.icaddon/
+├── CubeTaleICAddon.java      # Main plugin class
+├── config/                   # AddonConfig
+├── hook/                     # ICEventListener, ChatListener, DiscordCHATBridge
+└── render/                   # TriggerProcessor
 ```
 
-## TypeScript & Composite Projects
+---
 
-Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references. This means:
+## CI / GitHub Actions
 
-- **Always typecheck from the root** — run `pnpm run typecheck` (which runs `tsc --build --emitDeclarationOnly`). This builds the full dependency graph so that cross-package imports resolve correctly. Running `tsc` inside a single package will fail if its dependencies haven't been built yet.
-- **`emitDeclarationOnly`** — we only emit `.d.ts` files during typecheck; actual JS bundling is handled by esbuild/tsx/vite...etc, not `tsc`.
-- **Project references** — when package A depends on package B, A's `tsconfig.json` must list B in its `references` array. `tsc --build` uses this to determine build order and skip up-to-date packages.
-
-## Root Scripts
-
-- `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages that define it
-- `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
-
-## Packages
-
-### `artifacts/api-server` (`@workspace/api-server`)
-
-Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` for request and response validation and `@workspace/db` for persistence.
-
-- Entry: `src/index.ts` — reads `PORT`, starts Express
-- App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
-- Depends on: `@workspace/db`, `@workspace/api-zod`
-- `pnpm --filter @workspace/api-server run dev` — run the dev server
-- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
-- Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
-
-### `lib/db` (`@workspace/db`)
-
-Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
-
-- `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
-- `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
-- `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
-- Exports: `.` (pool, db, schema), `./schema` (schema only)
-
-Production migrations are handled by Replit when publishing. In development, we just use `pnpm --filter @workspace/db run push`, and we fallback to `pnpm --filter @workspace/db run push-force`.
-
-### `lib/api-spec` (`@workspace/api-spec`)
-
-Owns the OpenAPI 3.1 spec (`openapi.yaml`) and the Orval config (`orval.config.ts`). Running codegen produces output into two sibling packages:
-
-1. `lib/api-client-react/src/generated/` — React Query hooks + fetch client
-2. `lib/api-zod/src/generated/` — Zod schemas
-
-Run codegen: `pnpm --filter @workspace/api-spec run codegen`
-
-### `lib/api-zod` (`@workspace/api-zod`)
-
-Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used by `api-server` for response validation.
-
-### `lib/api-client-react` (`@workspace/api-client-react`)
-
-Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
-
-### `scripts` (`@workspace/scripts`)
-
-Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+Both plugins ship a `.github/workflows/build.yml` that runs `mvn package`
+on push/PR to produce release-ready JARs as build artifacts.

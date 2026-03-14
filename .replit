@@ -26,13 +26,12 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "console"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pnpm --filter @workspace/api-server run dev"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
+args = "cd CubeTale-DiscordCHAT && mvn package -B --no-transfer-progress -q && echo '✓ CubeTale-DiscordCHAT built successfully' && cd ../CubeTale-InteractiveChat-Addon && mvn package -B --no-transfer-progress -q && echo '✓ CubeTale-InteractiveChat-Addon built successfully' && echo '' && echo '--- Both plugin JARs ready in their respective target/ directories ---' && ls -lh ../CubeTale-DiscordCHAT/target/*.jar ../CubeTale-InteractiveChat-Addon/target/*.jar"
 
 [[ports]]
 localPort = 5000

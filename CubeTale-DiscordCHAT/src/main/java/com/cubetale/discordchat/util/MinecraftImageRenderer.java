@@ -297,6 +297,73 @@ public class MinecraftImageRenderer {
     }
 
     /**
+     * Renders a player's equipped armor (helmet, chestplate, leggings, boots) and
+     * offhand item as a vertical strip of Minecraft-style item tooltip images.
+     *
+     * armorSlots index mapping (Bukkit order): 0=boots, 1=leggings, 2=chestplate, 3=helmet
+     * Displayed top-to-bottom as: Helmet, Chestplate, Leggings, Boots, [Offhand if present]
+     */
+    public static byte[] renderArmor(ItemStack[] armorSlots, ItemStack offhand, String playerName) throws IOException {
+        ItemStack helmet     = safeGet(armorSlots, 3);
+        ItemStack chestplate = safeGet(armorSlots, 2);
+        ItemStack leggings   = safeGet(armorSlots, 1);
+        ItemStack boots      = safeGet(armorSlots, 0);
+
+        final int S   = 36 * SCALE;
+        final int G   = 4  * SCALE;
+        final int P   = PAD * SCALE;
+        final int HDR = 26 * SCALE;
+
+        ItemStack[] display = { helmet, chestplate, leggings, boots, offhand };
+        String[] labels     = { "Helmet", "Chestplate", "Leggings", "Boots", "Offhand" };
+
+        Set<String> needed = new LinkedHashSet<>();
+        for (ItemStack it : display) {
+            if (it != null && it.getType() != Material.AIR)
+                needed.add(it.getType().getKey().getKey().toLowerCase());
+        }
+        Map<String, BufferedImage> tex = new HashMap<>();
+        for (String key : needed) { BufferedImage t = fetchTexture(key); if (t != null) tex.put(key, t); }
+
+        Font fontBold  = new Font(Font.MONOSPACED, Font.BOLD,  FONT_SIZE * SCALE);
+        Font fontSmall = new Font(Font.MONOSPACED, Font.PLAIN, (int)(FONT_SIZE * SCALE * 0.65));
+        FontMetrics fmBold  = dummyFm(fontBold);
+        FontMetrics fmSmall = dummyFm(fontSmall);
+
+        int labelW = 0;
+        for (String lbl : labels) labelW = Math.max(labelW, fmSmall.stringWidth(lbl));
+
+        int colSlot  = P;
+        int colLabel = colSlot + S + G;
+        int totalW   = colLabel + labelW + P;
+        int totalH   = P + HDR + G + display.length * (S + G) + P;
+
+        BufferedImage hi = new BufferedImage(totalW, totalH, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = createG(hi);
+        drawBg(g, totalW, totalH);
+
+        g.setFont(fontBold);
+        g.setColor(CODE_COLORS.get('7'));
+        g.drawString(playerName + "'s Armor", P, P + fmBold.getAscent());
+
+        g.setColor(new Color(60, 60, 60));
+        g.drawLine(P, P + HDR, totalW - P, P + HDR);
+
+        int y0 = P + HDR + G;
+        for (int i = 0; i < display.length; i++) {
+            int slotY = y0 + i * (S + G);
+            drawSlot(g, display[i], colSlot, slotY, S, false, tex);
+            g.setFont(fontSmall);
+            g.setColor(display[i] != null && display[i].getType() != Material.AIR
+                    ? CODE_COLORS.get('f') : CODE_COLORS.get('8'));
+            g.drawString(labels[i], colLabel, slotY + S / 2 + fmSmall.getAscent() / 2);
+        }
+
+        g.dispose();
+        return toPng(downscale(hi, totalW / SCALE, totalH / SCALE));
+    }
+
+    /**
      * Renders a player profile card (the /profile command).
      * Fetches the player's head sprite from mc-heads.net.
      */

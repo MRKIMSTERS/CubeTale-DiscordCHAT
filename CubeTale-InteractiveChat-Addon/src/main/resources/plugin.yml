@@ -1,0 +1,21 @@
+name: CubeTale-InteractiveChat-Addon
+version: '${project.version}'
+main: com.cubetale.icaddon.CubeTaleICAddon
+api-version: '1.21'
+authors: [MRKIMSTERS, "CubeTale Developments (MrKiro_)"]
+description: Bridges InteractiveChat with CubeTale-DiscordCHAT — sends item/inventory/map/book renders to Discord.
+website: https://github.com/MRKIMSTERS/CubeTale-DiscordCHAT
+
+depend: [InteractiveChat, CubeTale-DiscordCHAT]
+
+commands:
+  ctdicaddon:
+    description: CubeTale InteractiveChat Addon admin command
+    aliases: [ctia]
+    usage: /<command> [reload|status]
+    permission: cubetale.icaddon.admin
+
+permissions:
+  cubetale.icaddon.admin:
+    description: Admin access to the CubeTale InteractiveChat Addon
+    default: op

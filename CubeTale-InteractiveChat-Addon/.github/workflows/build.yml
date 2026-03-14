@@ -1,0 +1,114 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [ created ]
+
+jobs:
+  # ── Build job: runs on every push and pull request ───────────────────────────
+  build:
+    name: Build JAR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      # Build the parent plugin first so the system-scope JAR is available
+      - name: Build CubeTale-DiscordCHAT (system dependency)
+        working-directory: CubeTale-DiscordCHAT
+        run: rm -f target/*.jar && mvn package -B --no-transfer-progress
+
+      - name: Build CubeTale-InteractiveChat-Addon
+        working-directory: CubeTale-InteractiveChat-Addon
+        run: rm -f target/*.jar && mvn package -B --no-transfer-progress
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CubeTale-InteractiveChat-Addon-${{ github.sha }}
+          path: CubeTale-InteractiveChat-Addon/target/CubeTale-InteractiveChat-Addon-*.jar
+          if-no-files-found: error
+          retention-days: 30
+
+  # ── Release job: runs when a GitHub Release is published ────────────────────
+  release:
+    name: Attach JAR to Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Extract version from release tag
+        run: |
+          RAW_TAG="${{ github.ref_name }}"
+          VERSION="${RAW_TAG#v}"
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Releasing version: $VERSION"
+
+      - name: Build CubeTale-DiscordCHAT (system dependency)
+        working-directory: CubeTale-DiscordCHAT
+        run: rm -f target/*.jar && mvn package -B --no-transfer-progress
+
+      - name: Set pom.xml version to release tag
+        working-directory: CubeTale-InteractiveChat-Addon
+        run: |
+          mvn versions:set \
+            -DnewVersion=${{ env.RELEASE_VERSION }} \
+            -DgenerateBackupPoms=false \
+            -B --no-transfer-progress
+
+      - name: Build release JAR
+        working-directory: CubeTale-InteractiveChat-Addon
+        run: rm -f target/*.jar && mvn package -B --no-transfer-progress
+
+      - name: Upload release JAR to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: CubeTale-InteractiveChat-Addon/target/CubeTale-InteractiveChat-Addon-*.jar
+          body: |
+            ## CubeTale-InteractiveChat-Addon ${{ env.RELEASE_VERSION }}
+
+            > **Author:** MRKIMSTERS
+            > **Developer:** CubeTale Developments (MrKiro_)
+
+            ### What this addon does
+            Bridges **InteractiveChat** with **CubeTale-DiscordCHAT** — no DiscordSRV required.
+            When a player types `[item]`, `[inv]`, `[enderchest]`, `[armor]`, `[offhand]`, `[map]`, or `[book]` in Minecraft chat, this addon renders the appropriate Minecraft content and sends it to Discord via your CubeTale-DiscordCHAT webhook.
+
+            ### Installation
+            1. Make sure **CubeTale-DiscordCHAT** and **InteractiveChat** are installed and working.
+            2. Download `CubeTale-InteractiveChat-Addon-${{ env.RELEASE_VERSION }}.jar`.
+            3. Drop it into your server's `plugins/` folder.
+            4. Restart the server.
+            5. Optionally edit `plugins/CubeTale-InteractiveChat-Addon/config.yml` to toggle individual trigger types.
+
+            ### Requirements
+            - Paper / Spigot **1.21+**
+            - Java **17+**
+            - **CubeTale-DiscordCHAT** (must be configured and connected)
+            - **InteractiveChat** by LOOHP
+          append_body: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

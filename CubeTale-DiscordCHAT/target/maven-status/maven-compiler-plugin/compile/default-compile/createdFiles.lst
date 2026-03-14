@@ -12,8 +12,8 @@ com/cubetale/discordchat/config/MessagesConfig.class
 com/cubetale/discordchat/CubeTaleDiscordChat.class
 com/cubetale/discordchat/discord/SlashCommandManager.class
 com/cubetale/discordchat/database/DatabaseManager.class
-com/cubetale/discordchat/minecraft/ChatHandler.class
 com/cubetale/discordchat/linking/LinkCommand.class
+com/cubetale/discordchat/minecraft/ChatHandler.class
 com/cubetale/discordchat/placeholders/DiscordPlaceholderExpansion.class
 com/cubetale/discordchat/discord/WebhookManager.class
 com/cubetale/discordchat/linking/LinkManager.class

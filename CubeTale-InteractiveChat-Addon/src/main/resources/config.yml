@@ -1,0 +1,22 @@
+# CubeTale-InteractiveChat-Addon Configuration
+# Bridges InteractiveChat placeholders with CubeTale-DiscordCHAT webhooks.
+# No DiscordSRV needed — uses your own CubeTale-DiscordCHAT bot and webhook.
+
+# Whether each trigger type is enabled.
+triggers:
+  item: true         # [item]       — renders held item as a tooltip image
+  inventory: true    # [inv]        — renders full inventory grid
+  enderchest: true   # [enderchest] / [ec]  — renders ender chest grid
+  armor: true        # [armor]      — renders armor slots + offhand
+  offhand: true      # [offhand]    — renders off-hand item as tooltip
+  map: true          # [map]        — shows held map info embed
+  book: true         # [book]       — shows held book contents in embed
+
+# Whether to suppress the plain-text version of the trigger token in the Discord
+# message that CubeTale-DiscordCHAT also sends. For example, if a player types
+# "look at this [item]", Discord would receive "look at this" (trigger stripped).
+# If false, CubeTale-DiscordCHAT forwards the raw message including the token.
+strip-triggers-from-chat: true
+
+# Debug logging — prints extra info to the console when triggers fire.
+debug: false

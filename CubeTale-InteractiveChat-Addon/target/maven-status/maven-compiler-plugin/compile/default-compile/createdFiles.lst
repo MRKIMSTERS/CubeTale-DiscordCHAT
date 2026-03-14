@@ -1,0 +1,6 @@
+com/cubetale/icaddon/hook/ChatListener.class
+com/cubetale/icaddon/hook/ICEventListener.class
+com/cubetale/icaddon/render/TriggerProcessor.class
+com/cubetale/icaddon/CubeTaleICAddon.class
+com/cubetale/icaddon/config/AddonConfig.class
+com/cubetale/icaddon/hook/DiscordCHATBridge.class

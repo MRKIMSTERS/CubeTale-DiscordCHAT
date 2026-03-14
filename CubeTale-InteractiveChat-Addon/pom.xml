@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.cubetale</groupId>
+    <artifactId>CubeTale-InteractiveChat-Addon</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>CubeTale-InteractiveChat-Addon</name>
+    <description>Add-on plugin that bridges InteractiveChat with CubeTale-DiscordCHAT — sends item/inventory/book/map renders to Discord without DiscordSRV.</description>
+    <url>https://github.com/MRKIMSTERS/CubeTale-DiscordCHAT</url>
+
+    <developers>
+        <developer>
+            <id>MRKIMSTERS</id>
+            <name>MRKIMSTERS</name>
+            <organization>CubeTale Developments</organization>
+            <organizationUrl>https://github.com/MRKIMSTERS</organizationUrl>
+            <roles>
+                <role>author</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>MrKiro_</id>
+            <name>MrKiro_</name>
+            <organization>CubeTale Developments</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+    <repositories>
+        <!-- Spigot API (Java 17 bytecode — compatible with Java 17/19 compiler) -->
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!--
+            Spigot API — compile scope so Maven resolves all transitive dependencies
+            (Guava, GSON, SnakeYAML, BungeeCord-chat, etc.) at compile time.
+            The maven-jar-plugin does NOT shade/bundle them; they stay server-provided.
+            NOTE: Paper API 1.21 uses Java 21 class files which are incompatible with
+            this build environment (Java 19), so we use Spigot API (Java 17) only.
+        -->
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.21-R0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.name}-${project.version}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+</project>
