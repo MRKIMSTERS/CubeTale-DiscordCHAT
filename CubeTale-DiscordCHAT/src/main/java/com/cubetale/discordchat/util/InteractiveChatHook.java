@@ -131,7 +131,9 @@ public class InteractiveChatHook {
         String lower = message.toLowerCase();
         // Always check built-ins
         if (lower.contains(TRIGGER_ITEM) || lower.contains(TRIGGER_INV)
-                || lower.contains(TRIGGER_ENDERCHEST) || lower.contains(TRIGGER_EC_SHORT)) {
+                || lower.contains(TRIGGER_ENDERCHEST) || lower.contains(TRIGGER_EC_SHORT)
+                || lower.contains(TRIGGER_ARMOR) || lower.contains(TRIGGER_OFFHAND)
+                || lower.contains(TRIGGER_MAP) || lower.contains(TRIGGER_BOOK)) {
             return true;
         }
         // Check IC-registered custom placeholders
