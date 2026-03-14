@@ -297,6 +297,54 @@ public class MinecraftImageRenderer {
     }
 
     /**
+     * Renders a player's equipped armor (helmet/chest/legs/boots) and offhand item
+     * as a vertical strip image.
+     */
+    public static byte[] renderArmor(ItemStack[] armorSlots, ItemStack offhand, String playerName) throws IOException {
+        Set<String> needed = new LinkedHashSet<>();
+        for (ItemStack it : armorSlots) {
+            if (it != null && it.getType() != Material.AIR)
+                needed.add(it.getType().getKey().getKey().toLowerCase());
+        }
+        if (offhand != null && offhand.getType() != Material.AIR)
+            needed.add(offhand.getType().getKey().getKey().toLowerCase());
+
+        Map<String, BufferedImage> tex = new HashMap<>();
+        for (String key : needed) { BufferedImage t = fetchTexture(key); if (t != null) tex.put(key, t); }
+
+        final int S   = 36 * SCALE;
+        final int G   = 3  * SCALE;
+        final int P   = PAD * SCALE;
+        final int HDR = 26 * SCALE;
+
+        int totalW = S + P * 2;
+        int totalH = P + HDR + G * 2 + 5 * (S + G) - G + P;
+
+        BufferedImage hi = new BufferedImage(totalW, totalH, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = createG(hi);
+        drawBg(g, totalW, totalH);
+
+        Font fontBold = new Font(Font.MONOSPACED, Font.BOLD, FONT_SIZE * SCALE);
+        g.setFont(fontBold);
+        g.setColor(CODE_COLORS.get('7'));
+        g.drawString("Armor", P, P + dummyFm(fontBold).getAscent());
+
+        g.setColor(new Color(60, 60, 60));
+        g.drawLine(P, P + HDR, totalW - P, P + HDR);
+
+        int y = P + HDR + G * 2;
+        // Bukkit armor order: [0]=boots, [1]=legs, [2]=chest, [3]=helmet
+        drawSlot(g, (armorSlots.length > 3 ? armorSlots[3] : null), P, y, S, false, tex); y += S + G;
+        drawSlot(g, (armorSlots.length > 2 ? armorSlots[2] : null), P, y, S, false, tex); y += S + G;
+        drawSlot(g, (armorSlots.length > 1 ? armorSlots[1] : null), P, y, S, false, tex); y += S + G;
+        drawSlot(g, (armorSlots.length > 0 ? armorSlots[0] : null), P, y, S, false, tex); y += S + G;
+        drawSlot(g, offhand, P, y, S, false, tex);
+
+        g.dispose();
+        return toPng(downscale(hi, totalW / SCALE, totalH / SCALE));
+    }
+
+    /**
      * Renders a player profile card (the /profile command).
      * Fetches the player's head sprite from mc-heads.net.
      */
