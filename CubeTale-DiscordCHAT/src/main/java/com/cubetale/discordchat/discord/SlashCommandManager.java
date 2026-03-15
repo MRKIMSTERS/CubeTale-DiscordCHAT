@@ -53,9 +53,6 @@ public class SlashCommandManager extends ListenerAdapter {
                 .addOption(OptionType.STRING, "player", "Minecraft player name", true)
                 .addOption(OptionType.STRING, "message", "Your message", true));
 
-        commands.add(Commands.slash("execute", "Execute a server console command (admin only)")
-                .addOption(OptionType.STRING, "command", "The command to execute", true));
-
         commands.add(Commands.slash("link", "Start the account linking process")
                 .addOption(OptionType.STRING, "code", "Your Minecraft verification code", false));
 
@@ -79,9 +76,6 @@ public class SlashCommandManager extends ListenerAdapter {
                 break;
             case "dm":
                 handleDm(event);
-                break;
-            case "execute":
-                handleExecute(event);
                 break;
             case "link":
                 handleLink(event);
@@ -289,41 +283,6 @@ public class SlashCommandManager extends ListenerAdapter {
 
             plugin.getPluginLogger().info("[Discord DM] " + senderTag + " → " + target.getName() + ": " + finalMessage);
         });
-    }
-
-    private void handleExecute(SlashCommandInteractionEvent event) {
-        String adminRoleId = plugin.getConfigManager().getAdminRoleId();
-        if (adminRoleId != null && !adminRoleId.isEmpty() && !adminRoleId.equals("ADMIN_ROLE_ID")) {
-            boolean hasRole = event.getMember() != null &&
-                    event.getMember().getRoles().stream().anyMatch(r -> r.getId().equals(adminRoleId));
-            if (!hasRole) {
-                event.reply("❌ You do not have permission to execute commands.").setEphemeral(true).queue();
-                return;
-            }
-        }
-
-        if (!plugin.getConfigManager().isConsoleEnabled()) {
-            event.reply("❌ Console access is disabled.").setEphemeral(true).queue();
-            return;
-        }
-
-        String command = event.getOption("command") != null ? event.getOption("command").getAsString() : "";
-        if (command.isEmpty()) {
-            event.reply("❌ Please provide a command.").setEphemeral(true).queue();
-            return;
-        }
-
-        final String finalCommand = command;
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            try {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand);
-                plugin.getPluginLogger().info("[Discord Execute] " + event.getUser().getAsTag() + ": " + finalCommand);
-            } catch (Exception e) {
-                plugin.getPluginLogger().warning("Error executing Discord command: " + e.getMessage());
-            }
-        });
-
-        event.reply("✅ Command `" + command + "` has been sent to the server console.").setEphemeral(true).queue();
     }
 
     private void handleLink(SlashCommandInteractionEvent event) {

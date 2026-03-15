@@ -22,6 +22,6 @@ com/cubetale/discordchat/config/ConfigManager.class
 com/cubetale/discordchat/util/AvatarUrlBuilder.class
 com/cubetale/discordchat/discord/DiscordListener.class
 com/cubetale/discordchat/util/PluginLogger.class
-com/cubetale/discordchat/minecraft/CommandManager.class
 com/cubetale/discordchat/util/MinecraftImageRenderer.class
 com/cubetale/discordchat/util/ColorConverter.class
+com/cubetale/discordchat/minecraft/CommandManager.class
