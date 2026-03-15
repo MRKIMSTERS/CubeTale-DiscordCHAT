@@ -1,0 +1,292 @@
+# ===========================================
+# CubeTale-Events Configuration
+# ===========================================
+# Plugin by CubeTale | Version 1.0.0
+
+# ── General ──────────────────────────────────────────────────────────────────
+general:
+  # Prefix shown in all plugin messages (supports color codes & hex)
+  prefix: "&#FFD700[&#FFB800Events&#FFD700] &r"
+  # Language for built-in messages
+  language: "en"
+  # Show join/leave notifications in event chat
+  event-join-broadcast: true
+  event-leave-broadcast: true
+  # Play sounds for event announcements
+  sounds:
+    start: "ENTITY_PLAYER_LEVELUP"
+    end: "UI_TOAST_CHALLENGE_COMPLETE"
+    countdown: "BLOCK_NOTE_BLOCK_PLING"
+    winner: "UI_TOAST_CHALLENGE_COMPLETE"
+    join: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  # Minimum players to auto-start an event (0 = no minimum)
+  min-players-to-start: 2
+
+# ── Discord Integration ────────────────────────────────────────────────────────
+discord:
+  enabled: true
+  # ID of the Discord channel to post event announcements to
+  # Requires CubeTale-DiscordCHAT to be installed
+  channel-id: "EVENTS_CHANNEL_ID"
+  # Webhook URL specifically for event announcements (optional, uses bot if blank)
+  webhook-url: ""
+  # Embed colors
+  colors:
+    start:   "#FFD700"
+    end:     "#00FF88"
+    winner:  "#FF6B35"
+    announce: "#5865F2"
+  # Post embed when an event starts
+  announce-start: true
+  # Post embed when an event ends
+  announce-end: true
+  # Post winner announcement
+  announce-winner: true
+
+# ── Automated Event Scheduler ─────────────────────────────────────────────────
+scheduler:
+  enabled: true
+  # How many minutes between automatic events
+  interval-minutes: 60
+  # Countdown minutes before the auto-event starts (e.g. announce 5 min before)
+  pre-announce-minutes: 5
+  # If true, pick event type by player vote. If false, cycle through the rotation list.
+  use-vote: true
+  # Vote duration in seconds (only applies when use-vote: true)
+  vote-duration: 60
+  # Rotation list (only applies when use-vote: false)
+  rotation:
+    - DROP_PARTY
+    - TRIVIA
+    - MOB_HUNT
+    - ORE_HUNT
+    - FISHING_COMPETITION
+    - SPLEEF
+    - PVP_TOURNAMENT
+    - LUCKY_BLOCK
+    - SCAVENGER_HUNT
+    - TNT_RUN
+  # Blackout hours (24h format) — no auto events during these hours (server time)
+  # Example: ["00:00-08:00"] means no events from midnight to 8 AM
+  blackout-hours: []
+  # Require at least this many online players for auto event to fire
+  min-online-players: 2
+
+# ── Event Types ───────────────────────────────────────────────────────────────
+
+events:
+
+  drop_party:
+    enabled: true
+    display-name: "Drop Party"
+    description: "Items rain from the sky — grab as many as you can!"
+    duration-seconds: 120
+    # Location where items drop (set via /event setlocation drop_party)
+    location: ""
+    # Radius around location for drops (blocks)
+    drop-radius: 15
+    # Total number of item stacks to drop
+    item-count: 80
+    # Item pool — format: MATERIAL:CHANCE (chance out of 100)
+    item-pool:
+      DIAMOND: 3
+      EMERALD: 5
+      GOLD_INGOT: 10
+      IRON_INGOT: 15
+      GOLDEN_APPLE: 8
+      EXPERIENCE_BOTTLE: 12
+      COOKED_BEEF: 20
+      BREAD: 25
+      ARROW: 30
+      COAL: 35
+    # Special rare drops (enchanted, named items) — defined in rewards section
+    rare-drops-enabled: true
+    rare-drop-chance: 10
+
+  trivia:
+    enabled: true
+    display-name: "Trivia"
+    description: "Answer Minecraft trivia questions to earn points and prizes!"
+    duration-seconds: 180
+    # Seconds per question
+    question-time: 20
+    # Number of questions per game
+    questions-per-game: 8
+    # First correct answer wins each round
+    # Questions are defined in trivia-questions.yml
+    points-per-correct: 1
+    bonus-speed-points: 1
+
+  mob_hunt:
+    enabled: true
+    display-name: "Mob Hunt"
+    description: "Hunt the target mob! The player who kills the most wins!"
+    duration-seconds: 300
+    # Mob type to hunt (ZOMBIE, SKELETON, CREEPER, SPIDER, etc.)
+    target-mob: "ZOMBIE"
+    # World where the hunt takes place (blank = all worlds)
+    world: ""
+    # Announce current leaderboard every X seconds
+    leaderboard-broadcast-interval: 60
+
+  ore_hunt:
+    enabled: true
+    display-name: "Ore Hunt"
+    description: "Mine as many target ores as you can within the time limit!"
+    duration-seconds: 240
+    # Ore type to mine
+    target-ore: "DIAMOND_ORE"
+    world: ""
+    leaderboard-broadcast-interval: 60
+
+  fishing_competition:
+    enabled: true
+    display-name: "Fishing Competition"
+    description: "Fish the most items within the time limit to win!"
+    duration-seconds: 300
+    # Count fish only, or all catches (including junk/treasure)
+    fish-only: false
+    leaderboard-broadcast-interval: 60
+
+  spleef:
+    enabled: true
+    display-name: "Spleef"
+    description: "Destroy blocks beneath opponents to make them fall!"
+    # Location of the spleef arena (set via /event setlocation spleef)
+    arena-location: ""
+    # Radius of the circular spleef floor (blocks)
+    arena-radius: 15
+    # Y level of the floor
+    floor-material: "SNOW_BLOCK"
+    # What players receive as their tool
+    shovel-material: "DIAMOND_SHOVEL"
+    respawn-on-death: false
+    max-players: 16
+
+  pvp_tournament:
+    enabled: true
+    display-name: "PvP Tournament"
+    description: "1v1 knockout bracket — last player standing wins!"
+    # Arena center (set via /event setlocation pvp)
+    arena-location: ""
+    arena-radius: 20
+    # Round time limit in seconds (0 = no limit)
+    round-time: 120
+    # Give players starter kits
+    kit:
+      enabled: true
+      items:
+        - "IRON_SWORD"
+        - "IRON_CHESTPLATE"
+        - "IRON_LEGGINGS"
+        - "IRON_BOOTS"
+        - "IRON_HELMET"
+        - "COOKED_BEEF:16"
+
+  lucky_block:
+    enabled: true
+    display-name: "Lucky Block"
+    description: "Break Lucky Blocks scattered across the world for random prizes!"
+    duration-seconds: 180
+    block-material: "GOLD_BLOCK"
+    block-count: 30
+    # World to scatter lucky blocks (blank = first world)
+    world: ""
+    # Radius from spawn to scatter blocks
+    scatter-radius: 100
+    # Min/max Y for block placement
+    min-y: 60
+    max-y: 120
+
+  scavenger_hunt:
+    enabled: true
+    display-name: "Scavenger Hunt"
+    description: "Find hidden items around the world and bring them back first!"
+    duration-seconds: 300
+    # Number of items to find
+    item-count: 5
+    # Items that may appear as hunt targets
+    possible-items:
+      - "DIAMOND"
+      - "EMERALD"
+      - "NETHER_STAR"
+      - "DRAGON_EGG"
+      - "ELYTRA"
+    world: ""
+    scatter-radius: 200
+
+  tnt_run:
+    enabled: true
+    display-name: "TNT Run"
+    description: "Run across TNT platforms — blocks disappear beneath you!"
+    arena-location: ""
+    arena-radius: 20
+    # Delay in ticks before TNT explodes after stepped on
+    explode-delay: 20
+    # Number of platform layers
+    layers: 3
+    layer-gap: 5
+
+# ── Rewards ────────────────────────────────────────────────────────────────────
+rewards:
+  # Reward tiers: 1st, 2nd, 3rd place (and participation)
+  first-place:
+    commands:
+      - "give {player} diamond 5"
+      - "eco give {player} 500"
+    broadcast: "&6&l★ {player} &ewon the event and received first-place rewards!"
+  second-place:
+    commands:
+      - "give {player} gold_ingot 10"
+      - "eco give {player} 250"
+    broadcast: "&7&l★ {player} &fcame in second place!"
+  third-place:
+    commands:
+      - "give {player} iron_ingot 15"
+      - "eco give {player} 100"
+    broadcast: "&c&l★ {player} &ccame in third place!"
+  participation:
+    enabled: true
+    commands:
+      - "eco give {player} 25"
+    # Only give participation reward if player was active (scored at least once)
+    require-score: true
+  # Drop party rare items
+  rare-items:
+    - type: "DIAMOND_SWORD"
+      name: "&bEvent Sword"
+      enchants:
+        SHARPNESS: 3
+        UNBREAKING: 2
+    - type: "GOLDEN_APPLE"
+      enchanted: true
+      amount: 1
+
+# ── Leaderboard ────────────────────────────────────────────────────────────────
+leaderboard:
+  enabled: true
+  # Database type: SQLITE or MYSQL
+  database: "SQLITE"
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "cubetale_events"
+    username: "root"
+    password: "password"
+    pool-size: 5
+  sqlite:
+    file: "leaderboard.db"
+  # Show top N players in /event top
+  top-count: 10
+
+# ── Placeholders (PlaceholderAPI) ──────────────────────────────────────────────
+# Available placeholders:
+#   %cubetaleevents_current_event%     - Current event name or "None"
+#   %cubetaleevents_next_event%        - Next scheduled event name
+#   %cubetaleevents_next_event_timer%  - Time until next event (mm:ss)
+#   %cubetaleevents_event_players%     - Players in current event
+#   %cubetaleevents_wins_{player}%     - Total event wins for a player
+#   %cubetaleevents_wins_total%        - Your total wins
+
+# ── Debug ──────────────────────────────────────────────────────────────────────
+debug: false

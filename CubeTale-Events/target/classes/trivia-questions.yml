@@ -1,0 +1,143 @@
+# ===========================================
+# CubeTale-Events — Trivia Questions
+# ===========================================
+# Format:
+#   question: "Your question here?"
+#   answers:   (list — all accepted correct answers, case-insensitive)
+#     - "Answer"
+#   options:   (optional — show A/B/C/D choices in chat, leave empty for open answer)
+#     - "A. Answer1"
+#     - "B. Answer2"
+#     - "C. Answer3"
+#     - "D. Answer4"
+#   correct-option: "A"  (only needed when using options)
+
+questions:
+  - question: "How many blocks tall is a default Minecraft tree (oak)?"
+    answers:
+      - "5"
+      - "five"
+    options:
+      - "A. 3"
+      - "B. 5"
+      - "C. 7"
+      - "D. 10"
+    correct-option: "B"
+
+  - question: "What material do you need to craft a Beacon?"
+    answers:
+      - "Nether Star"
+      - "netherstar"
+      - "nether_star"
+
+  - question: "How many obsidian blocks are needed to build a Nether Portal?"
+    answers:
+      - "10"
+      - "ten"
+    options:
+      - "A. 6"
+      - "B. 10"
+      - "C. 14"
+      - "D. 16"
+    correct-option: "B"
+
+  - question: "What is the maximum enchantment level for Sharpness?"
+    answers:
+      - "5"
+      - "V"
+      - "five"
+
+  - question: "Which mob drops Ender Pearls?"
+    answers:
+      - "Enderman"
+      - "enderman"
+
+  - question: "What biome does the Mooshroom mob spawn in?"
+    answers:
+      - "Mushroom Island"
+      - "mushroom island"
+      - "mushroom fields"
+
+  - question: "How deep is the bedrock layer in the Overworld?"
+    answers:
+      - "Y -64"
+      - "-64"
+      - "y=-64"
+
+  - question: "What is the rarest ore in Minecraft 1.18+?"
+    answers:
+      - "Ancient Debris"
+      - "ancient debris"
+
+  - question: "How many wolves does it take to tame a wolf?"
+    answers:
+      - "varies"
+    options:
+      - "A. 1"
+      - "B. 3 to 5"
+      - "C. Random chance with bones"
+      - "D. 10"
+    correct-option: "C"
+
+  - question: "Which item is used to cure a Zombie Villager?"
+    answers:
+      - "Golden Apple"
+      - "golden apple"
+
+  - question: "What is the max level for the Looting enchantment?"
+    answers:
+      - "3"
+      - "III"
+      - "three"
+
+  - question: "How many hearts does an Ender Dragon have?"
+    answers:
+      - "100"
+      - "200"
+
+  - question: "What block do you use to breed horses?"
+    answers:
+      - "Golden Apple"
+      - "Golden Carrot"
+      - "golden apple"
+      - "golden carrot"
+
+  - question: "What is the name of Minecraft's default main character?"
+    answers:
+      - "Steve"
+      - "steve"
+
+  - question: "How many strongholds are there per Minecraft world?"
+    answers:
+      - "128"
+
+  - question: "What potion ingredient is used to make a Potion of Strength?"
+    answers:
+      - "Blaze Powder"
+      - "blaze powder"
+
+  - question: "Which structure houses the Elder Guardian?"
+    answers:
+      - "Ocean Monument"
+      - "ocean monument"
+
+  - question: "What is the drop chance of a Wither Skeleton skull?"
+    answers:
+      - "2.5%"
+      - "2.5"
+    options:
+      - "A. 1%"
+      - "B. 2.5%"
+      - "C. 5%"
+      - "D. 10%"
+    correct-option: "B"
+
+  - question: "How many bookshelves are needed for max enchanting?"
+    answers:
+      - "15"
+      - "fifteen"
+
+  - question: "What mob can you ride using a Saddle and Carrot on a Stick?"
+    answers:
+      - "Pig"
+      - "pig"

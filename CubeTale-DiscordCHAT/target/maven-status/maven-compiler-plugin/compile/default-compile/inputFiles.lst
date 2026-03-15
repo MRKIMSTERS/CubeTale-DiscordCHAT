@@ -2,8 +2,8 @@
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/sync/GroupMapper.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/discord/DiscordListener.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/util/MessageFormatter.java
-/home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/util/SkinsRestorerHook.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/util/MinecraftImageRenderer.java
+/home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/util/SkinsRestorerHook.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/CubeTaleDiscordChat.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/sync/RoleSyncManager.java
 /home/runner/workspace/CubeTale-DiscordCHAT/src/main/java/com/cubetale/discordchat/config/ConfigManager.java

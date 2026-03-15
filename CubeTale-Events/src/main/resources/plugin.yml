@@ -1,0 +1,44 @@
+name: CubeTale-Events
+version: ${project.version}
+main: com.cubetale.events.CubeTaleEvents
+api-version: "1.21"
+description: Feature-rich automated events system with Discord integration
+authors: [MRKIMSTERS, MrKiro_]
+website: https://github.com/MRKIMSTERS/CubeTale-Events
+
+softdepend:
+  - CubeTale-DiscordCHAT
+  - PlaceholderAPI
+
+commands:
+  event:
+    description: Main CubeTale Events command
+    aliases: [events, ev]
+    usage: /event <subcommand>
+    permission: cubetaleevents.use
+
+  eventvote:
+    description: Vote for the next event
+    aliases: [evvote, vote]
+    usage: /eventvote <type>
+    permission: cubetaleevents.vote
+
+permissions:
+  cubetaleevents.use:
+    description: Use basic event commands
+    default: true
+  cubetaleevents.vote:
+    description: Vote for events
+    default: true
+  cubetaleevents.join:
+    description: Join events
+    default: true
+  cubetaleevents.spectate:
+    description: Spectate events
+    default: true
+  cubetaleevents.admin:
+    description: Admin event commands (start, stop, create, reload)
+    default: op
+  cubetaleevents.bypass:
+    description: Bypass event cooldowns and restrictions
+    default: op

@@ -1,0 +1,111 @@
+# ===========================================
+# CubeTale-Events Messages
+# ===========================================
+# Supports & color codes, &#RRGGBB hex colors, and {placeholders}
+
+messages:
+  # General
+  no-permission: "&cYou don't have permission to do that."
+  player-only: "&cThis command can only be used by players."
+  unknown-command: "&cUnknown subcommand. Use &f/event help &cfor a list of commands."
+  plugin-reloaded: "&aPlugin reloaded successfully."
+  invalid-event-type: "&cInvalid event type: &f{type}&c. Use /event types for a list."
+  no-event-running: "&cThere is no event currently running."
+  event-already-running: "&cAn event is already running: &f{event}&c."
+  not-in-event: "&cYou are not participating in the current event."
+  already-in-event: "&cYou are already participating in this event."
+  event-full: "&cThis event is full ({max} players max)."
+  too-few-players: "&cNot enough players to start. Need at least &f{min}&c players."
+
+  # Event lifecycle
+  event-starting:
+    - ""
+    - "&#FFD700&lCubeTale Events"
+    - "&#FFB800&l{event} &fis starting in &e{countdown} seconds&f!"
+    - "&7Type &f/event join &7to participate."
+    - ""
+  event-started:
+    - ""
+    - "&#00FF88&l✔ {event} &fhas started!"
+    - "&7{description}"
+    - "&7Players: &f{players}"
+    - ""
+  event-ended:
+    - ""
+    - "&#FF6B35&l✘ {event} &fhas ended!"
+    - ""
+  event-cancelled: "&c&l✘ {event} &chas been cancelled."
+
+  # Winner announcements
+  winner-broadcast:
+    - ""
+    - "&#FFD700&l★ &6&lEVENT WINNER &r&#FFD700&l★"
+    - "&#FFD700  {event}"
+    - "&e  1st: &f{1st}"
+    - "&7  2nd: &f{2nd}"
+    - "&7  3rd: &f{3rd}"
+    - ""
+  no-winner: "&7Nobody won this event. Better luck next time!"
+
+  # Joining / Leaving
+  joined-event: "&#00FF88✔ &aYou joined &f{event}&a!"
+  left-event: "&7You left &f{event}&7."
+  spectating-event: "&7You are now spectating &f{event}&7."
+  player-joined: "&#00FF88{player} &ajoined the event! &7({count}/{max})"
+  player-left: "&7{player} left the event."
+
+  # Countdown
+  countdown-broadcast: "&e&l{seconds} second{s} until &f&l{event} &e&lstarts!"
+  countdown-title: "&#FFD700&l{seconds}"
+  countdown-subtitle: "&funtil {event} starts"
+
+  # Scheduler
+  auto-event-warning: "&#FFD700[Auto-Event] &fNext event: &e{event}&f in &e{time}&f. Vote with &f/eventvote&f!"
+  auto-event-start: "&#FFD700[Auto-Event] &f{event} &fis starting now!"
+  no-auto-event: "&7No auto-event is scheduled (not enough players online)."
+
+  # Vote
+  vote-started:
+    - ""
+    - "&#5865F2&lVote for the next event!"
+    - "&7You have &f{seconds} seconds &7to vote."
+  vote-options: "  &f{num}. &e{event} &7— /eventvote {type}"
+  vote-cast: "&#5865F2✔ &9You voted for &f{event}&9."
+  already-voted: "&cYou already voted! Your vote: &f{event}&c."
+  vote-results:
+    - ""
+    - "&#5865F2Vote Results:"
+    - "  &#FFD700Winner: &f{event} &7({votes} votes)"
+    - ""
+
+  # Trivia
+  trivia-question: "&#5865F2[Trivia] &f{question}"
+  trivia-options: "  &7{options}"
+  trivia-correct: "&#00FF88✔ {player} &agot it right! &7(+{points} points)"
+  trivia-wrong: "&#FF4444✘ &cWrong answer! The correct answer was &f{answer}&c."
+  trivia-timeout: "&7Time's up! The answer was &f{answer}&7."
+  trivia-score: "&7Trivia score: &f{score} points"
+
+  # Mob Hunt
+  mob-hunt-kill: "&#FF6B35{player} &6killed a &f{mob}&6! &7Total: &f{count}"
+  mob-hunt-leaderboard:
+    - "&#FF6B35&lMob Hunt Leaderboard:"
+    - "  &e{rank}. &f{player}: &e{count} kills"
+
+  # Ore Hunt
+  ore-hunt-mine: "&#4FC3F7{player} &bmined &f{ore}&b! &7Total: &f{count}"
+
+  # Fishing Competition
+  fishing-catch: "&#1565C0{player} &9caught something! &7Total: &f{count}"
+
+  # Leaderboard
+  leaderboard-header: "&#FFD700&lTop Event Winners"
+  leaderboard-entry: "  &e{rank}. &f{player}: &e{wins} win{s}"
+  leaderboard-empty: "&7No wins recorded yet. Participate in events to get on the board!"
+  your-stats: "&7Your stats — Wins: &f{wins} &7| Events played: &f{played}"
+
+  # Admin
+  event-force-started: "&#FF6B35[Admin] &f{event} was force-started by &f{admin}&f."
+  event-force-stopped: "&#FF6B35[Admin] &fEvent stopped by &f{admin}&f."
+  location-set: "&aLocation &f{name} &aset to your current position."
+  location-not-set: "&cLocation &f{name} &chas not been set. Use &f/event setlocation {name}&c."

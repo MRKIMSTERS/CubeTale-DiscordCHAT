@@ -1,6 +1,6 @@
 /home/runner/workspace/CubeTale-InteractiveChat-Addon/src/main/java/com/cubetale/icaddon/render/TriggerProcessor.java
 /home/runner/workspace/CubeTale-InteractiveChat-Addon/src/main/java/com/cubetale/icaddon/config/AddonConfig.java
 /home/runner/workspace/CubeTale-InteractiveChat-Addon/src/main/java/com/cubetale/icaddon/hook/ChatListener.java
-/home/runner/workspace/CubeTale-InteractiveChat-Addon/src/main/java/com/cubetale/icaddon/hook/ICEventListener.java
 /home/runner/workspace/CubeTale-InteractiveChat-Addon/src/main/java/com/cubetale/icaddon/hook/DiscordCHATBridge.java
+/home/runner/workspace/CubeTale-InteractiveChat-Addon/src/main/java/com/cubetale/icaddon/hook/ICEventListener.java
 /home/runner/workspace/CubeTale-InteractiveChat-Addon/src/main/java/com/cubetale/icaddon/CubeTaleICAddon.java
